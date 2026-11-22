@@ -12,7 +12,7 @@
       -webkit-user-select: none;
       -webkit-touch-callout: none;
     }
-    input, select {
+    input, textarea, select {
       user-select: text;
       -webkit-user-select: text;
     }
@@ -79,7 +79,7 @@
     <!-- Top HUD Bar -->
     <div id="hud-top" class="pointer-events-none absolute top-0 left-0 right-0 p-2 sm:p-3.5 flex flex-col gap-2 z-20">
       <div class="flex items-start justify-between gap-2">
-        <!-- Left HUD: Fuel, Coins, Distance, Rank -->
+        <!-- Left HUD: Fuel, Coins, Distance, Rank (MP only) -->
         <div class="flex flex-col gap-1.5">
           <div class="hud-glass rounded-xl px-2.5 sm:px-3 py-1.5 sm:py-2 flex items-center gap-2.5 sm:gap-3 shadow-lg">
             <!-- Fuel Gauge -->
@@ -112,31 +112,33 @@
             </div>
           </div>
 
-          <!-- Distance + Rank + Timer Pill -->
+          <!-- Distance + Mode-Specific Telemetry -->
           <div class="hud-glass rounded-xl px-3 py-1 inline-flex items-center gap-2.5 self-start shadow-md text-xs">
             <div class="flex items-baseline gap-1">
               <span id="hud-distance" class="text-sm sm:text-base font-black tabular-nums text-white">0</span>
-              <span id="hud-goal-label" class="text-[11px] font-bold text-slate-400">/ 2000m</span>
+              <span id="hud-goal-label" class="text-[11px] font-bold text-slate-400">m</span>
+            </div>
+            <div id="hud-mp-stats" class="hidden items-center gap-2.5">
+              <div class="w-px h-3.5 bg-white/15"></div>
+              <div class="font-bold text-slate-300">
+                Pos: <span id="hud-rank" class="text-amber-300 font-black">1st/1</span>
+              </div>
+              <div class="w-px h-3.5 bg-white/15 hidden sm:block"></div>
+              <div class="font-mono font-bold text-sky-300 hidden sm:block" id="hud-timer">00:00.0</div>
             </div>
             <div class="w-px h-3.5 bg-white/15"></div>
-            <div class="font-bold text-slate-300">
-              Pos: <span id="hud-rank" class="text-amber-300 font-black">1st/4</span>
-            </div>
-            <div class="w-px h-3.5 bg-white/15 hidden sm:block"></div>
-            <div class="font-mono font-bold text-sky-300 hidden sm:block" id="hud-timer">00:00.0</div>
-            <div class="w-px h-3.5 bg-white/15 hidden md:block"></div>
-            <div class="text-slate-300 font-semibold hidden md:block">
+            <div class="text-slate-300 font-semibold">
               Best: <span id="hud-best" class="text-emerald-300 font-extrabold tabular-nums">0</span>m
             </div>
           </div>
         </div>
 
-        <!-- Right HUD: Room/Seed, Audio, Pause -->
+        <!-- Right HUD: Room (MP only), Seed, Audio, Pause -->
         <div class="pointer-events-auto flex items-center gap-1.5">
-          <button id="btn-copy-room-hud" type="button" title="Copy Room Code" class="hud-glass hover:bg-slate-800/90 active:scale-95 transition rounded-xl px-2.5 py-2 flex items-center gap-1.5 text-xs font-bold text-slate-200 shadow-lg cursor-pointer">
+          <button id="btn-copy-room-hud" type="button" title="Copy Room Code" class="hidden hud-glass hover:bg-slate-800/90 active:scale-95 transition rounded-xl px-2.5 py-2 items-center gap-1.5 text-xs font-bold text-slate-200 shadow-lg cursor-pointer">
             <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
             <span class="hidden sm:inline text-slate-400">Room</span>
-            <span id="hud-room-code" class="font-mono text-sky-300">HC-1042</span>
+            <span id="hud-room-code" class="font-mono text-sky-300">CO-1042-2K</span>
           </button>
 
           <button id="btn-new-seed" type="button" title="Generate new random terrain" class="hud-glass hover:bg-slate-800/90 active:scale-95 transition rounded-xl px-2.5 py-2 flex items-center gap-1.5 text-xs font-bold text-slate-200 shadow-lg cursor-pointer">
@@ -170,19 +172,16 @@
         </div>
       </div>
 
-      <!-- Live Multiplayer Race Progress Bar -->
-      <div id="race-progress-wrap" class="mx-auto w-full max-w-xl hud-glass rounded-full px-3 py-1.5 flex items-center gap-2 shadow-lg">
+      <!-- Live Multiplayer Race Progress Bar (Hidden in Solo Mode!) -->
+      <div id="race-progress-wrap" class="hidden mx-auto w-full max-w-xl hud-glass rounded-full px-3 py-1.5 flex items-center gap-2 shadow-lg">
         <span class="text-[10px] font-black uppercase tracking-wider text-slate-400">Start</span>
-        <div id="race-progress-track" class="relative flex-1 h-2 bg-slate-800 rounded-full border border-white/10">
-          <!-- Racer dots rendered dynamically -->
-        </div>
-        <span id="race-progress-finish" class="text-[10px] font-black uppercase tracking-wider text-amber-300">2.0 km 🏁</span>
+        <div id="race-progress-track" class="relative flex-1 h-2 bg-slate-800 rounded-full border border-white/10"></div>
+        <span id="race-progress-finish" class="text-[10px] font-black uppercase tracking-wider text-amber-300">2 km 🏁</span>
       </div>
     </div>
 
     <!-- Bottom Controls & Telemetry -->
     <div id="hud-bottom" class="pointer-events-none absolute bottom-0 left-0 right-0 p-3 sm:p-5 flex items-end justify-between gap-2 z-20">
-      <!-- Brake Pedal -->
       <button id="btn-brake" type="button" class="pedal-btn pointer-events-auto w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-gradient-to-b from-rose-500 to-rose-700 border-b-4 border-rose-950 shadow-2xl flex flex-col items-center justify-center gap-1 cursor-pointer">
         <div class="w-12 h-1.5 rounded-full bg-rose-950/40"></div>
         <div class="w-12 h-1.5 rounded-full bg-rose-950/40"></div>
@@ -190,7 +189,6 @@
         <span class="text-[10px] font-bold text-rose-200/90 hidden sm:inline">A / ←</span>
       </button>
 
-      <!-- Center Speed / RPM / Torque / Path Pill -->
       <div class="hud-glass rounded-2xl px-3.5 py-2 flex items-center gap-3 sm:gap-4 shadow-xl mb-1">
         <div class="text-center">
           <div class="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Speed</div>
@@ -213,7 +211,6 @@
         </div>
       </div>
 
-      <!-- Gas Pedal -->
       <button id="btn-gas" type="button" class="pedal-btn pointer-events-auto w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-gradient-to-b from-emerald-500 to-emerald-700 border-b-4 border-emerald-950 shadow-2xl flex flex-col items-center justify-center gap-1 cursor-pointer">
         <div class="w-12 h-1.5 rounded-full bg-emerald-950/40"></div>
         <div class="w-12 h-1.5 rounded-full bg-emerald-950/40"></div>
@@ -222,12 +219,12 @@
       </button>
     </div>
 
-    <!-- Title / Multiplayer Race Setup Overlay -->
+    <!-- Title / Mode Selection Overlay -->
     <div id="overlay-start" class="absolute inset-0 bg-slate-950/60 backdrop-blur-[2px] flex items-center justify-center p-3 sm:p-4 z-30 overflow-y-auto">
       <div class="modal-pop hud-glass rounded-3xl max-w-xl w-full p-4 sm:p-6 shadow-2xl border border-white/20 my-auto max-h-[95vh] overflow-y-auto">
         <div class="flex items-center justify-between gap-2 mb-3">
           <div>
-            <span class="inline-block text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 mb-1">Realistic Torque &amp; Ghost Multiplayer</span>
+            <span class="inline-block text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 mb-1">Realistic Physics • Players Only (No Bots)</span>
             <h1 class="text-xl sm:text-2xl font-black tracking-tight text-white">Hill Climb</h1>
           </div>
           <div class="text-right">
@@ -236,27 +233,31 @@
           </div>
         </div>
 
-        <!-- Tabs: Race Setup | Multiplayer Room -->
-        <div class="grid grid-cols-2 gap-1.5 p-1 bg-slate-900/80 rounded-xl border border-white/10 mb-4">
-          <button id="tab-setup" type="button" class="py-1.5 rounded-lg text-xs font-extrabold transition cursor-pointer bg-emerald-500 text-slate-950">Track &amp; Vehicle</button>
-          <button id="tab-multi" type="button" class="py-1.5 rounded-lg text-xs font-extrabold transition cursor-pointer text-slate-300 hover:text-white">Multiplayer &amp; Finish</button>
+        <!-- Primary Mode Switcher: Solo Run (Endless) vs Multiplayer Race -->
+        <div class="grid grid-cols-2 gap-1.5 p-1 bg-slate-900/85 rounded-xl border border-white/10 mb-3.5">
+          <button id="mode-solo-btn" type="button" class="py-2 rounded-lg text-xs font-extrabold transition cursor-pointer bg-emerald-500 text-slate-950">Solo Run (Endless)</button>
+          <button id="mode-mp-btn" type="button" class="py-2 rounded-lg text-xs font-extrabold transition cursor-pointer text-slate-300 hover:text-white">Multiplayer Race 🏁</button>
+        </div>
+
+        <!-- Sub-tabs inside Multiplayer or Solo Track/Vehicle -->
+        <div id="mp-subtabs" class="hidden grid-cols-2 gap-1.5 mb-3">
+          <button id="tab-setup" type="button" class="py-1.5 rounded-lg text-xs font-bold border transition cursor-pointer bg-sky-500/20 border-sky-400 text-sky-200">1. Track &amp; Vehicle</button>
+          <button id="tab-multi" type="button" class="py-1.5 rounded-lg text-xs font-bold border transition cursor-pointer bg-slate-800/70 border-white/10 text-slate-300 hover:text-white">2. Connect Players &amp; Finish</button>
         </div>
 
         <!-- Panel 1: Track & Vehicle -->
         <div id="panel-setup">
-          <!-- Path / Terrain Type Picker (8 Types) -->
-          <div class="mb-3.5">
+          <div class="mb-3">
             <div class="flex items-center justify-between mb-1.5">
               <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Terrain Path Type (8 Styles)</span>
-              <span id="path-desc-label" class="text-[11px] text-sky-300 font-semibold">Balanced rolling hills</span>
+              <span id="path-desc-label" class="text-[11px] text-sky-300 font-semibold">Classic rolling hills</span>
             </div>
             <div id="biome-buttons" class="grid grid-cols-2 sm:grid-cols-4 gap-1.5"></div>
           </div>
 
-          <!-- Vehicle Quick Picker (6 Vehicles) -->
-          <div class="mb-3.5">
+          <div class="mb-3">
             <div class="flex items-center justify-between mb-1.5">
-              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Choose Vehicle (All Unlocked)</span>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Choose Vehicle (6 Unlocked)</span>
               <span id="vehicle-spec-label" class="text-[11px] text-amber-300 font-semibold">4WD • Balanced</span>
             </div>
             <div id="start-vehicle-buttons" class="grid grid-cols-3 gap-1.5"></div>
@@ -279,21 +280,20 @@
           </div>
         </div>
 
-        <!-- Panel 2: Multiplayer & Finish Line -->
+        <!-- Panel 2: Multiplayer Connection & Finish Line (Real Players Only — Zero Bots!) -->
         <div id="panel-multi" class="hidden">
           <!-- Finish Line Distance -->
-          <div class="mb-3.5">
+          <div class="mb-3">
             <div class="flex items-center justify-between mb-1.5">
-              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Finish Line Distance</span>
-              <span id="finish-summary-label" class="text-[11px] font-bold text-amber-300">2.0 km Race</span>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Multiplayer Finish Line</span>
+              <span id="finish-summary-label" class="text-[11px] font-bold text-amber-300">2 km Race</span>
             </div>
-            <div id="finish-buttons" class="grid grid-cols-3 sm:grid-cols-6 gap-1.5 mb-2">
+            <div id="finish-buttons" class="grid grid-cols-5 gap-1.5 mb-2">
               <button type="button" data-km="1" class="finish-btn py-1.5 rounded-xl text-xs font-bold border cursor-pointer">1 km</button>
               <button type="button" data-km="2" class="finish-btn py-1.5 rounded-xl text-xs font-bold border cursor-pointer">2 km</button>
               <button type="button" data-km="3" class="finish-btn py-1.5 rounded-xl text-xs font-bold border cursor-pointer">3 km</button>
               <button type="button" data-km="4" class="finish-btn py-1.5 rounded-xl text-xs font-bold border cursor-pointer">4 km</button>
               <button type="button" data-km="5" class="finish-btn py-1.5 rounded-xl text-xs font-bold border cursor-pointer">5 km</button>
-              <button type="button" data-km="0" class="finish-btn py-1.5 rounded-xl text-xs font-bold border cursor-pointer">Endless</button>
             </div>
             <div class="flex items-center gap-2 bg-slate-900/70 rounded-xl px-3 py-1.5 border border-white/10">
               <label for="input-custom-km" class="text-[11px] font-bold text-slate-300 whitespace-nowrap">Custom Distance (km):</label>
@@ -302,46 +302,57 @@
             </div>
           </div>
 
-          <!-- Player Name & Room Code Join -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-3.5">
-            <div class="bg-slate-900/75 rounded-2xl p-2.5 border border-white/10">
+          <!-- Driver Name & Live Connection Status -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+            <div class="bg-slate-900/75 rounded-xl p-2.5 border border-white/10">
               <label for="input-player-name" class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Your Driver Name</label>
-              <input id="input-player-name" type="text" maxlength="14" value="You" class="w-full bg-slate-800 border border-white/15 rounded-lg px-2.5 py-1.5 text-xs font-bold text-white focus:outline-none focus:border-sky-400" />
+              <input id="input-player-name" type="text" maxlength="14" value="You" class="w-full bg-slate-800 border border-white/15 rounded-lg px-2.5 py-1 text-xs font-bold text-white focus:outline-none focus:border-sky-400" />
             </div>
-            <div class="bg-slate-900/75 rounded-2xl p-2.5 border border-white/10">
+            <div class="bg-slate-900/75 rounded-xl p-2.5 border border-white/10">
               <div class="flex items-center justify-between mb-1">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Join / Share Room</span>
-                <span id="live-peers-badge" class="text-[10px] font-bold text-emerald-400">Live Sync Ready</span>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Same-Browser Room</span>
+                <span id="live-peers-badge" class="text-[10px] font-bold text-emerald-400">0 Players Joined</span>
               </div>
-              <div class="flex gap-1.5">
+              <div class="flex gap-1">
                 <input id="input-room-code" type="text" maxlength="18" class="flex-1 min-w-0 bg-slate-800 border border-white/15 rounded-lg px-2 py-1 text-xs font-mono font-bold text-sky-300 uppercase focus:outline-none focus:border-sky-400" />
-                <button id="btn-join-room" type="button" class="px-2.5 py-1 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-black cursor-pointer">Join</button>
-                <button id="btn-copy-room" type="button" class="px-2 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold cursor-pointer">Copy</button>
+                <button id="btn-join-room" type="button" class="px-2 py-1 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 text-[11px] font-black cursor-pointer">Join</button>
+                <button id="btn-copy-room" type="button" class="px-2 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-[11px] font-bold cursor-pointer">Copy</button>
               </div>
             </div>
           </div>
 
-          <!-- Ghost Racers & 2P Controls -->
-          <div class="bg-slate-900/75 rounded-2xl p-3 border border-white/10 mb-4 flex flex-col gap-2.5">
-            <div class="flex items-center justify-between gap-2">
+          <!-- Cross-Device Direct P2P (WebRTC) Connect Box -->
+          <div class="bg-slate-900/80 rounded-2xl p-3 border border-sky-400/25 mb-3">
+            <div class="flex items-center justify-between gap-2 mb-1.5">
               <div>
-                <div class="text-xs font-extrabold text-white">Ghost AI Competitors (No Collision)</div>
-                <div class="text-[10px] text-slate-400">All other cars are transparent pass-through ghosts</div>
+                <div class="text-xs font-extrabold text-sky-300">Cross-Device Live Connect (Different Devices)</div>
+                <div class="text-[10px] text-slate-400">Direct peer-to-peer link — ghost cars pass through with zero collision</div>
               </div>
-              <select id="select-bot-count" class="bg-slate-800 border border-white/15 rounded-lg px-2 py-1 text-xs font-bold text-white cursor-pointer">
-                <option value="0">0 Bots (Solo / Tab MP)</option>
-                <option value="2">2 AI Racers</option>
-                <option value="3" selected>3 AI Racers</option>
-                <option value="5">5 AI Racers</option>
-              </select>
+              <span id="webrtc-status" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300 border border-white/10 shrink-0">Not Linked</span>
             </div>
-            <div class="flex items-center justify-between gap-2 pt-2 border-t border-white/10">
-              <div>
-                <div class="text-xs font-extrabold text-white">Local 2-Player Split Keyboard</div>
-                <div class="text-[10px] text-slate-400">P1: A/D keys • P2: Left/Right Arrow keys</div>
+
+            <div class="grid grid-cols-2 gap-1.5 mb-2">
+              <button id="btn-rtc-host" type="button" class="py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 text-[11px] font-black cursor-pointer">1. Host: Create Invite</button>
+              <button id="btn-rtc-join" type="button" class="py-1.5 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white text-[11px] font-black cursor-pointer">2. Join: Paste Invite</button>
+            </div>
+
+            <div id="rtc-exchange-box" class="hidden flex-col gap-1.5">
+              <div id="rtc-instructions" class="text-[10px] text-amber-300 font-semibold"></div>
+              <textarea id="rtc-code-input" rows="2" placeholder="Paste friend's Invite or Reply code here..." class="w-full bg-slate-950 border border-white/15 rounded-lg p-1.5 text-[10px] font-mono text-emerald-300 focus:outline-none focus:border-sky-400 resize-none"></textarea>
+              <div class="flex gap-1.5">
+                <button id="btn-rtc-copy" type="button" class="flex-1 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-[11px] font-bold text-white cursor-pointer">Copy Code</button>
+                <button id="btn-rtc-confirm" type="button" class="flex-1 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-[11px] font-black text-slate-950 cursor-pointer">Apply / Connect</button>
               </div>
-              <button id="btn-toggle-2p" type="button" class="px-3 py-1 rounded-lg text-xs font-black border transition cursor-pointer bg-slate-800 border-white/15 text-slate-300">OFF</button>
             </div>
+          </div>
+
+          <!-- Local 2P Split Keyboard Option -->
+          <div class="bg-slate-900/75 rounded-xl px-3 py-2 border border-white/10 mb-3.5 flex items-center justify-between gap-2">
+            <div>
+              <div class="text-xs font-extrabold text-white">Same-Device 2-Player Keyboard</div>
+              <div class="text-[10px] text-slate-400">P1: A/D keys • P2: Left/Right Arrows (no collisions)</div>
+            </div>
+            <button id="btn-toggle-2p" type="button" class="px-3 py-1 rounded-lg text-xs font-black border transition cursor-pointer bg-slate-800 border-white/15 text-slate-300">OFF</button>
           </div>
         </div>
 
@@ -351,7 +362,7 @@
             Upgrades
           </button>
           <button id="btn-play" type="button" class="col-span-2 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-95 transition text-base font-black text-slate-950 shadow-lg shadow-emerald-500/25 cursor-pointer">
-            START RACE!
+            DRIVE SOLO!
           </button>
         </div>
       </div>
@@ -379,14 +390,14 @@
           <h2 id="go-title" class="text-2xl font-black text-white">Run Complete</h2>
         </div>
 
-        <div class="grid grid-cols-4 gap-2 mb-4">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
           <div class="bg-slate-900/75 rounded-2xl p-2.5 border border-white/10 text-center">
             <div class="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Distance</div>
             <div class="text-base font-black text-white tabular-nums"><span id="go-distance">0</span>m</div>
           </div>
           <div class="bg-slate-900/75 rounded-2xl p-2.5 border border-white/10 text-center">
-            <div class="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Time</div>
-            <div class="text-base font-black text-sky-300 tabular-nums" id="go-time">00:00</div>
+            <div id="go-second-label" class="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Best Record</div>
+            <div id="go-second-val" class="text-base font-black text-sky-300 tabular-nums"><span id="go-best">0</span>m</div>
           </div>
           <div class="bg-slate-900/75 rounded-2xl p-2.5 border border-white/10 text-center">
             <div class="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Coins</div>
@@ -398,20 +409,20 @@
           </div>
         </div>
 
-        <!-- Race Standings Leaderboard -->
-        <div id="go-leaderboard-wrap" class="mb-4 bg-slate-900/75 rounded-2xl p-3 border border-white/10">
-          <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Race Standings</div>
+        <!-- Race Standings Leaderboard (Shown in Multiplayer Mode) -->
+        <div id="go-leaderboard-wrap" class="hidden mb-4 bg-slate-900/75 rounded-2xl p-3 border border-white/10">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Multiplayer Standings</div>
           <div id="go-leaderboard" class="flex flex-col gap-1.5 text-xs"></div>
         </div>
 
         <div class="flex flex-col gap-2">
           <div class="grid grid-cols-2 gap-2">
-            <button id="btn-go-retry" type="button" class="py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 transition font-black text-sm text-slate-950 cursor-pointer">Race Again</button>
+            <button id="btn-go-retry" type="button" class="py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 transition font-black text-sm text-slate-950 cursor-pointer">Retry Path</button>
             <button id="btn-go-new" type="button" class="py-3 rounded-2xl bg-sky-500 hover:bg-sky-400 active:scale-95 transition font-black text-sm text-slate-950 cursor-pointer">New Random Path</button>
           </div>
           <div class="grid grid-cols-2 gap-2">
             <button id="btn-go-garage" type="button" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 transition font-bold text-xs text-amber-300 border border-white/15 cursor-pointer">Garage &amp; Upgrades</button>
-            <button id="btn-go-menu" type="button" class="py-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 active:scale-95 transition font-bold text-xs text-slate-300 border border-white/10 cursor-pointer">Change Track / MP</button>
+            <button id="btn-go-menu" type="button" class="py-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 active:scale-95 transition font-bold text-xs text-slate-300 border border-white/10 cursor-pointer">Change Mode / Track</button>
           </div>
         </div>
       </div>
@@ -433,13 +444,11 @@
           </div>
         </div>
 
-        <!-- Vehicles -->
         <div class="mb-4">
           <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Vehicles (All 6 Playable)</div>
           <div id="vehicle-list" class="grid grid-cols-3 gap-2"></div>
         </div>
 
-        <!-- Upgrades -->
         <div class="mb-5">
           <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Performance Upgrades</div>
           <div id="upgrade-list" class="flex flex-col gap-2"></div>
@@ -459,93 +468,69 @@
       // ============================================================
       // 1. PERSISTENT STATE, 8 PATH BIOMES & 6 VEHICLES
       // ============================================================
-      const STORAGE_KEY = 'hill_climb_pro_v2';
+      const STORAGE_KEY = 'hill_climb_pro_v3';
       const PX_PER_METER = 14;
 
       const BIOMES = {
         countryside: {
-          code: 'CO',
-          name: 'Countryside',
-          desc: 'Classic rolling hills & gentle jumps',
-          gravity: 980,
-          friction: 1.05,
+          code: 'CO', name: 'Countryside', desc: 'Classic rolling hills & gentle jumps',
+          gravity: 980, friction: 1.05,
           skyTop: '#1d4ed8', skyMid: '#38bdf8', skyBottom: '#bae6fd',
           sunColor: '#fef08a', farHill: '#60a5fa', midHill: '#34d399',
           crustTop: '#22c55e', crustEdge: '#15803d', dirtTop: '#92400e', dirtBottom: '#451a03',
           hasStars: false, cloudColor: 'rgba(255,255,255,0.75)'
         },
         alpine: {
-          code: 'AL',
-          name: 'Alpine Peaks',
-          desc: 'Steep climbs & dramatic mountain ridges',
-          gravity: 980,
-          friction: 0.98,
+          code: 'AL', name: 'Alpine Peaks', desc: 'Steep climbs & dramatic mountain ridges',
+          gravity: 980, friction: 0.98,
           skyTop: '#0c4a6e', skyMid: '#0284c7', skyBottom: '#e0f2fe',
           sunColor: '#fef9c3', farHill: '#475569', midHill: '#64748b',
           crustTop: '#10b981', crustEdge: '#047857', dirtTop: '#57534e', dirtBottom: '#292524',
           hasStars: false, cloudColor: 'rgba(255,255,255,0.68)'
         },
         desert: {
-          code: 'DE',
-          name: 'Desert Dunes',
-          desc: 'Asymmetrical sand dunes & big jump crests',
-          gravity: 980,
-          friction: 0.88,
+          code: 'DE', name: 'Desert Dunes', desc: 'Asymmetrical sand dunes & big jump crests',
+          gravity: 980, friction: 0.88,
           skyTop: '#9a3412', skyMid: '#f97316', skyBottom: '#fde68a',
           sunColor: '#fffbeb', farHill: '#ea580c', midHill: '#d97706',
           crustTop: '#f59e0b', crustEdge: '#b45309', dirtTop: '#c2410c', dirtBottom: '#7c2d12',
           hasStars: false, cloudColor: 'rgba(255,237,213,0.45)'
         },
         washboard: {
-          code: 'WB',
-          name: 'Washboard',
-          desc: 'Rhythmic motocross whoops & suspension bumps',
-          gravity: 980,
-          friction: 1.08,
+          code: 'WB', name: 'Washboard', desc: 'Rhythmic motocross whoops & suspension bumps',
+          gravity: 980, friction: 1.08,
           skyTop: '#312e81', skyMid: '#6366f1', skyBottom: '#fed7aa',
           sunColor: '#fde047', farHill: '#7c3aed', midHill: '#a855f7',
           crustTop: '#d97706', crustEdge: '#92400e', dirtTop: '#78350f', dirtBottom: '#451a03',
           hasStars: false, cloudColor: 'rgba(255,255,255,0.5)'
         },
         canyon: {
-          code: 'CA',
-          name: 'Canyon Bridges',
-          desc: 'High red-rock mesas & suspension bridges',
-          gravity: 980,
-          friction: 1.02,
+          code: 'CA', name: 'Canyon Bridges', desc: 'High red-rock mesas & suspension bridges',
+          gravity: 980, friction: 1.02,
           skyTop: '#7c2d12', skyMid: '#dc2626', skyBottom: '#fdba74',
           sunColor: '#fef08a', farHill: '#991b1b', midHill: '#b91c1c',
           crustTop: '#ea580c', crustEdge: '#9a3412', dirtTop: '#7c2d12', dirtBottom: '#431407',
           hasStars: false, cloudColor: 'rgba(254,215,170,0.4)'
         },
         arctic: {
-          code: 'AR',
-          name: 'Arctic Ice',
-          desc: 'Low-traction glacial ice & snowy shelves',
-          gravity: 960,
-          friction: 0.62,
+          code: 'AR', name: 'Arctic Ice', desc: 'Low-traction glacial ice & snowy shelves',
+          gravity: 960, friction: 0.62,
           skyTop: '#0f172a', skyMid: '#1e3a8a', skyBottom: '#93c5fd',
           sunColor: '#e0f2fe', farHill: '#475569', midHill: '#94a3b8',
           crustTop: '#f8fafc', crustEdge: '#bae6fd', dirtTop: '#334155', dirtBottom: '#0f172a',
           hasStars: true, cloudColor: 'rgba(226,232,240,0.4)'
         },
         moon: {
-          code: 'MO',
-          name: 'Moon Craters',
-          desc: 'Low lunar gravity & deep crater launches',
-          gravity: 420,
-          friction: 0.85,
+          code: 'MO', name: 'Moon Craters', desc: 'Low lunar gravity & deep crater launches',
+          gravity: 420, friction: 0.85,
           skyTop: '#020617', skyMid: '#0f172a', skyBottom: '#1e293b',
           sunColor: '#e2e8f0', farHill: '#334155', midHill: '#475569',
           crustTop: '#94a3b8', crustEdge: '#64748b', dirtTop: '#475569', dirtBottom: '#1e293b',
           hasStars: true, cloudColor: null
         },
         highway: {
-          code: 'HW',
-          name: 'Highway Ramps',
-          desc: 'High-grip tarmac with mega speed ramps',
-          gravity: 980,
-          friction: 1.28,
+          code: 'HW', name: 'Highway Ramps', desc: 'High-grip tarmac with mega speed ramps',
+          gravity: 980, friction: 1.28,
           skyTop: '#1e293b', skyMid: '#3b82f6', skyBottom: '#cbd5e1',
           sunColor: '#fef08a', farHill: '#334155', midHill: '#475569',
           crustTop: '#334155', crustEdge: '#facc15', dirtTop: '#1e293b', dirtBottom: '#0f172a',
@@ -617,17 +602,14 @@
         { key: 'fuel', name: 'Fuel Tank', desc: 'Longer range between fuel cans', max: 5, baseCost: 110 }
       ];
 
-      const BOT_NAMES = ['ApexViper', 'TurboKai', 'HillKing', 'DriftNova', 'MudFox'];
-      const BOT_COLORS = ['#38bdf8', '#f472b6', '#a78bfa', '#fb923c', '#4ade80'];
-
       let saveData = {
         coins: 250,
         bestByBiome: {},
+        playMode: 'solo', // 'solo' (endless, no finish line) | 'multiplayer' (finish line, real players only)
         selectedVehicle: 'jeep',
         selectedBiome: 'countryside',
         finishKm: 2,
         playerName: 'You',
-        botCount: 3,
         twoPlayer: false,
         upgrades: { engine: 1, suspension: 1, tires: 1, fuel: 1 }
       };
@@ -640,11 +622,11 @@
             if (parsed && typeof parsed === 'object') {
               if (Number.isFinite(parsed.coins)) saveData.coins = Math.max(0, Math.floor(parsed.coins));
               if (parsed.bestByBiome && typeof parsed.bestByBiome === 'object') saveData.bestByBiome = parsed.bestByBiome;
+              if (parsed.playMode === 'solo' || parsed.playMode === 'multiplayer') saveData.playMode = parsed.playMode;
               if (parsed.selectedVehicle && VEHICLES[parsed.selectedVehicle]) saveData.selectedVehicle = parsed.selectedVehicle;
               if (parsed.selectedBiome && BIOMES[parsed.selectedBiome]) saveData.selectedBiome = parsed.selectedBiome;
-              if (Number.isFinite(parsed.finishKm)) saveData.finishKm = Math.max(0, Math.min(25, parsed.finishKm));
+              if (Number.isFinite(parsed.finishKm)) saveData.finishKm = Math.max(0.5, Math.min(25, parsed.finishKm));
               if (typeof parsed.playerName === 'string' && parsed.playerName.trim()) saveData.playerName = parsed.playerName.trim().slice(0, 14);
-              if (Number.isFinite(parsed.botCount)) saveData.botCount = Math.max(0, Math.min(5, Math.floor(parsed.botCount)));
               if (typeof parsed.twoPlayer === 'boolean') saveData.twoPlayer = parsed.twoPlayer;
               if (parsed.upgrades) {
                 for (const def of UPGRADE_DEFS) {
@@ -666,12 +648,9 @@
       // ============================================================
       class SoundEngine {
         constructor() {
-          this.ctx = null;
-          this.muted = false;
-          this.engineOsc = null;
-          this.engineSub = null;
-          this.engineGain = null;
-          this.engineFilter = null;
+          this.ctx = null; this.muted = false;
+          this.engineOsc = null; this.engineSub = null;
+          this.engineGain = null; this.engineFilter = null;
           this.started = false;
         }
         unlock() {
@@ -687,35 +666,26 @@
             this.engineSub = this.ctx.createOscillator();
             this.engineFilter = this.ctx.createBiquadFilter();
             this.engineGain = this.ctx.createGain();
-            this.engineOsc.type = 'sawtooth';
-            this.engineSub.type = 'triangle';
-            this.engineOsc.frequency.value = 54;
-            this.engineSub.frequency.value = 27;
-            this.engineFilter.type = 'lowpass';
-            this.engineFilter.frequency.value = 240;
+            this.engineOsc.type = 'sawtooth'; this.engineSub.type = 'triangle';
+            this.engineOsc.frequency.value = 54; this.engineSub.frequency.value = 27;
+            this.engineFilter.type = 'lowpass'; this.engineFilter.frequency.value = 240;
             this.engineGain.gain.value = 0.0001;
             this.engineOsc.connect(this.engineFilter);
             this.engineSub.connect(this.engineFilter);
             this.engineFilter.connect(this.engineGain);
             this.engineGain.connect(this.ctx.destination);
-            this.engineOsc.start();
-            this.engineSub.start();
+            this.engineOsc.start(); this.engineSub.start();
             this.started = true;
           } catch (e) { this.started = false; }
         }
         setMuted(m) {
           this.muted = m;
-          if (this.engineGain && this.ctx) {
-            this.engineGain.gain.setTargetAtTime(m ? 0.0001 : 0.02, this.ctx.currentTime, 0.05);
-          }
+          if (this.engineGain && this.ctx) this.engineGain.gain.setTargetAtTime(m ? 0.0001 : 0.02, this.ctx.currentTime, 0.05);
         }
         updateEngine(rpmNorm, throttle, active) {
           if (!this.started || !this.ctx || !this.engineGain) return;
           const now = this.ctx.currentTime;
-          if (this.muted || !active) {
-            this.engineGain.gain.setTargetAtTime(0.0001, now, 0.06);
-            return;
-          }
+          if (this.muted || !active) { this.engineGain.gain.setTargetAtTime(0.0001, now, 0.06); return; }
           const c = Math.max(0, Math.min(1.25, rpmNorm));
           const freq = 44 + c * 122 + (throttle ? 18 : 0);
           this.engineOsc.frequency.setTargetAtTime(freq, now, 0.035);
@@ -733,29 +703,21 @@
           osc.frequency.exponentialRampToValueAtTime(Math.max(20, f2), now + dur);
           g.gain.setValueAtTime(vol, now);
           g.gain.exponentialRampToValueAtTime(0.001, now + dur);
-          osc.connect(g);
-          g.connect(this.ctx.destination);
-          osc.start(now);
-          osc.stop(now + dur + 0.02);
+          osc.connect(g); g.connect(this.ctx.destination);
+          osc.start(now); osc.stop(now + dur + 0.02);
         }
         playCoin() { this.playTone('sine', 980, 1520, 0.14, 0.1); }
         playFuel() {
           if (this.muted || !this.started || !this.ctx) return;
-          [440, 554, 659, 880].forEach((f, i) => {
-            setTimeout(() => this.playTone('triangle', f, f * 1.02, 0.12, 0.09), i * 45);
-          });
+          [440, 554, 659, 880].forEach((f, i) => setTimeout(() => this.playTone('triangle', f, f * 1.02, 0.12, 0.09), i * 45));
         }
         playStunt() {
           if (this.muted || !this.started || !this.ctx) return;
-          [523, 659, 784, 1046].forEach((f, i) => {
-            setTimeout(() => this.playTone('sine', f, f * 1.04, 0.18, 0.08), i * 40);
-          });
+          [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => this.playTone('sine', f, f * 1.04, 0.18, 0.08), i * 40));
         }
         playFinish() {
           if (this.muted || !this.started || !this.ctx) return;
-          [523, 659, 784, 1046, 1318].forEach((f, i) => {
-            setTimeout(() => this.playTone('triangle', f, f, 0.24, 0.11), i * 65);
-          });
+          [523, 659, 784, 1046, 1318].forEach((f, i) => setTimeout(() => this.playTone('triangle', f, f, 0.24, 0.11), i * 65));
         }
         playCrash() { this.playTone('sawtooth', 150, 32, 0.36, 0.18); }
         playLowFuelBeep() { this.playTone('square', 740, 740, 0.08, 0.04); }
@@ -768,8 +730,7 @@
       function mulberry32(seed) {
         let a = seed >>> 0;
         return function() {
-          a |= 0;
-          a = (a + 0x6D2B79F5) | 0;
+          a |= 0; a = (a + 0x6D2B79F5) | 0;
           let t = Math.imul(a ^ (a >>> 15), 1 | a);
           t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
           return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
@@ -781,13 +742,12 @@
           this.seed = seed;
           this.biomeKey = biomeKey;
           this.biome = BIOMES[biomeKey];
-          this.finishMeters = finishMeters; // 0 = endless
+          this.finishMeters = finishMeters; // 0 in Solo Run (endless!)
           this.finishX = finishMeters > 0 ? 120 + finishMeters * PX_PER_METER : 0;
 
           this.step = 16;
           this.startIdx = -40;
           this.points = [];
-          this.bridgeRanges = []; // for Canyon Bridges visual planks
           this.pickups = [];
           this.props = [];
           this.nextFuelX = 1150;
@@ -796,14 +756,10 @@
 
           const rng = mulberry32(seed);
           this.rng = rng;
-          this.p1 = rng() * Math.PI * 2;
-          this.p2 = rng() * Math.PI * 2;
-          this.p3 = rng() * Math.PI * 2;
-          this.p4 = rng() * Math.PI * 2;
-          this.f1 = 0.0021 + rng() * 0.0011;
-          this.f2 = 0.0052 + rng() * 0.0022;
+          this.p1 = rng() * Math.PI * 2; this.p2 = rng() * Math.PI * 2;
+          this.p3 = rng() * Math.PI * 2; this.p4 = rng() * Math.PI * 2;
+          this.f1 = 0.0021 + rng() * 0.0011; this.f2 = 0.0052 + rng() * 0.0022;
           this.f3 = 0.0112 + rng() * 0.0042;
-          this.f4 = 0.025 + rng() * 0.009;
 
           this.knots = [];
           this.knotSpacing = biomeKey === 'alpine' ? 250 : biomeKey === 'washboard' ? 190 : 220;
@@ -824,8 +780,7 @@
               else if (this.biomeKey === 'washboard') amp = 110;
               else if (this.biomeKey === 'canyon') amp = 160;
               const raw = (this.rng() * 2 - 1) * amp * distFactor;
-              const prev = this.knots[i - 1];
-              this.knots.push(prev * 0.34 + raw * 0.66);
+              this.knots.push(this.knots[i - 1] * 0.34 + raw * 0.66);
             }
           }
         }
@@ -840,14 +795,8 @@
           const y1 = this.knots[i];
           const y2 = this.knots[i + 1];
           const y3 = this.knots[i + 2];
-          const f2 = f * f;
-          const f3 = f2 * f;
-          return 0.5 * (
-            (2 * y1) +
-            (-y0 + y2) * f +
-            (2 * y0 - 5 * y1 + 4 * y2 - y3) * f2 +
-            (-y0 + 3 * y1 - 3 * y2 + y3) * f3
-          );
+          const f2 = f * f; const f3 = f2 * f;
+          return 0.5 * ((2 * y1) + (-y0 + y2) * f + (2 * y0 - 5 * y1 + 4 * y2 - y3) * f2 + (-y0 + 3 * y1 - 3 * y2 + y3) * f3);
         }
 
         computeHeight(x) {
@@ -856,13 +805,11 @@
             if (x < -100) return baseY - Math.min(280, (-100 - x) * 0.95);
             return baseY;
           }
-          // Smooth flat finish runway if finish line is set
           let finishFlatten = 1;
           if (this.finishX > 0 && x > this.finishX - 240) {
             const t = Math.min(1, (x - (this.finishX - 240)) / 240);
             finishFlatten = 1 - (t * t * (3 - 2 * t));
           }
-
           const ramp = Math.min(1, (x - 210) / 260);
           const smoothRamp = ramp * ramp * (3 - 2 * ramp) * finishFlatten;
           const diff = Math.min(2.1, 0.72 + (x / 12000) * 1.1);
@@ -872,53 +819,35 @@
           if (this.biomeKey === 'countryside') {
             h = macro + Math.sin(x * this.f1 + this.p1) * 58 + Math.sin(x * this.f2 + this.p2) * 30 * diff + Math.sin(x * this.f3 + this.p3) * 14 * diff;
           } else if (this.biomeKey === 'alpine') {
-            // Sharp mountain peaks via abs(sin) ridge shaping
             const ridge = Math.abs(Math.sin(x * 0.0028 + this.p1)) * 130 - 65;
             const subRidge = Math.abs(Math.sin(x * 0.0068 + this.p2)) * 42 * diff;
             h = macro * 0.9 + ridge + subRidge + Math.sin(x * this.f3 + this.p3) * 16;
           } else if (this.biomeKey === 'desert') {
-            // Asymmetrical wind-carved sand dunes (skewed sine wave)
             const ph = x * 0.0046 + this.p1;
             const dune = (Math.sin(ph) + 0.38 * Math.sin(2 * ph + 0.6)) * 78 * diff * 0.85;
             h = macro * 0.75 + dune + Math.sin(x * this.f3 + this.p2) * 14;
           } else if (this.biomeKey === 'washboard') {
-            // Rhythmic motocross whoops + rolling tabletops
             const whoops = Math.sin(x * 0.036 + this.p3) * (15 + 7 * Math.sin(x * 0.003 + this.p1));
             const rollers = Math.sin(x * 0.0042 + this.p2) * 58;
             h = macro * 0.6 + rollers + whoops;
           } else if (this.biomeKey === 'canyon') {
-            // Stepped mesas + suspension bridge sags every ~950px
             const cycle = ((x - 210) % 960 + 960) % 960;
             if (cycle > 560 && cycle < 880) {
-              // Bridge catenary dip
               const u = (cycle - 560) / 320;
-              const sag = Math.sin(u * Math.PI) * 34;
-              h = macro * 0.5 + sag;
+              h = macro * 0.5 + Math.sin(u * Math.PI) * 34;
             } else {
-              // Mesa top with slight crags
-              const mesa = Math.tanh(Math.sin(x * 0.003 + this.p1) * 2.2) * 75;
-              h = macro * 0.65 + mesa + Math.sin(x * 0.015 + this.p2) * 11;
+              h = macro * 0.65 + Math.tanh(Math.sin(x * 0.003 + this.p1) * 2.2) * 75 + Math.sin(x * 0.015 + this.p2) * 11;
             }
           } else if (this.biomeKey === 'arctic') {
-            // Glacial shelves + sharp icy moguls
-            const shelf = Math.sin(x * 0.0034 + this.p1) * 70 + Math.sin(x * 0.009 + this.p2) * 28 * diff;
-            const iceBump = Math.sin(x * 0.022 + this.p3) * 10;
-            h = macro * 0.85 + shelf + iceBump;
+            h = macro * 0.85 + Math.sin(x * 0.0034 + this.p1) * 70 + Math.sin(x * 0.009 + this.p2) * 28 * diff + Math.sin(x * 0.022 + this.p3) * 10;
           } else if (this.biomeKey === 'moon') {
-            // Crater bowls: inverted peaks for huge air launches
             const crater = -Math.pow(Math.abs(Math.sin(x * 0.0044 + this.p1)), 1.7) * 110 + 50;
             h = macro * 0.8 + crater + Math.sin(x * 0.011 + this.p2) * 22 * diff;
           } else if (this.biomeKey === 'highway') {
-            // Fast sweeping rollers + periodic launch ramps
             const cycle = ((x - 210) % 780 + 780) % 780;
-            let rampBoost = 0;
-            if (cycle > 460 && cycle < 640) {
-              const u = (cycle - 460) / 180;
-              rampBoost = -Math.sin(u * Math.PI) * 68;
-            }
+            const rampBoost = (cycle > 460 && cycle < 640) ? -Math.sin(((cycle - 460) / 180) * Math.PI) * 68 : 0;
             h = macro * 0.45 + Math.sin(x * 0.0024 + this.p1) * 48 + rampBoost;
           }
-
           return baseY + smoothRamp * h;
         }
 
@@ -935,8 +864,6 @@
             const idx = this.startIdx + this.points.length;
             const x = idx * this.step;
             let y = this.computeHeight(x);
-
-            // Clamp maximum local slope so every hill is climbable with skill
             if (this.points.length > 0 && x > 210) {
               const prevY = this.points[this.points.length - 1];
               const maxGrade = this.biomeKey === 'alpine' ? 0.78 : this.biomeKey === 'highway' ? 0.62 : 0.72;
@@ -947,42 +874,35 @@
             this.points.push(y);
           }
 
-          // Spawn fuel cans
           while (this.nextFuelX < targetX - 200) {
             if (this.finishX > 0 && this.nextFuelX > this.finishX - 120) break;
             const fx = this.nextFuelX;
-            const fy = this.getHeight(fx) - 24;
-            this.pickups.push({ type: 'fuel', x: fx, y: fy, collected: false, radius: 22 });
+            this.pickups.push({ type: 'fuel', x: fx, y: this.getHeight(fx) - 24, collected: false, radius: 22 });
             this.nextFuelX += 1180 + this.rng() * 340;
           }
 
-          // Spawn coin arcs
           while (this.nextCoinClusterX < targetX - 200) {
             if (this.finishX > 0 && this.nextCoinClusterX > this.finishX - 80) break;
             const count = 4 + Math.floor(this.rng() * 4);
-            const spacing = 44;
             const startX = this.nextCoinClusterX;
             const roll = this.rng();
             const val = roll > 0.82 ? 100 : roll > 0.45 ? 25 : 5;
             const arcBoost = this.rng() > 0.5 ? 24 : 0;
             for (let i = 0; i < count; i++) {
-              const cx = startX + i * spacing;
+              const cx = startX + i * 44;
               const arc = Math.sin((i / Math.max(1, count - 1)) * Math.PI) * arcBoost;
               const cy = this.getHeight(cx) - 24 - arc;
-              const nearFuel = this.pickups.some(p => p.type === 'fuel' && Math.abs(p.x - cx) < 52);
-              if (!nearFuel) {
+              if (!this.pickups.some(p => p.type === 'fuel' && Math.abs(p.x - cx) < 52)) {
                 this.pickups.push({ type: 'coin', value: val, x: cx, y: cy, collected: false, radius: 17 });
               }
             }
             this.nextCoinClusterX += 390 + this.rng() * 350;
           }
 
-          // Spawn props
           while (this.nextPropX < targetX - 100) {
             const px = this.nextPropX;
             if (!this.isBridgeAt(px)) {
-              const py = this.getHeight(px);
-              this.props.push({ x: px, y: py, scale: 0.72 + this.rng() * 0.62, kind: this.rng() > 0.35 ? 'plant' : 'rock' });
+              this.props.push({ x: px, y: this.getHeight(px), scale: 0.72 + this.rng() * 0.62, kind: this.rng() > 0.35 ? 'plant' : 'rock' });
             }
             this.nextPropX += 160 + this.rng() * 240;
           }
@@ -1002,8 +922,7 @@
           const eps = 6;
           const h1 = this.getHeight(x - eps);
           const h2 = this.getHeight(x + eps);
-          const dx = eps * 2;
-          const dy = h2 - h1;
+          const dx = eps * 2; const dy = h2 - h1;
           const len = Math.hypot(dx, dy) || 1;
           return { nx: dy / len, ny: -dx / len, tx: dx / len, ty: dy / len };
         }
@@ -1018,10 +937,8 @@
           this.upgrades = upgrades;
           this.name = opts.name || 'You';
           this.isLocal = Boolean(opts.isLocal);
-          this.isBot = Boolean(opts.isBot);
           this.isP2 = Boolean(opts.isP2);
           this.ghostColor = opts.ghostColor || null;
-          this.botSkill = opts.botSkill || 0.85;
 
           this.wheelBase = spec.wheelBase;
           this.suspRest = spec.suspRest;
@@ -1029,7 +946,6 @@
           this.inertia = spec.inertia;
           this.cgHeight = spec.cgHeight;
 
-          // Upgrade-scaled parameters
           const engMul = 1 + ((upgrades.engine || 1) - 1) * 0.13;
           const suspMul = 1 + ((upgrades.suspension || 1) - 1) * 0.11;
           const tireMul = 1 + ((upgrades.tires || 1) - 1) * 0.14;
@@ -1043,175 +959,92 @@
           this.fuelDrainRate = spec.fuelRate / fuelMul;
 
           const startY = terrain.getHeight(startX) - this.suspRest - Math.max(spec.rearRadius, spec.frontRadius) - 4;
-          this.x = startX;
-          this.y = startY;
-          this.vx = 0;
-          this.vy = 0;
-          this.angle = 0;
-          this.omega = 0;
+          this.x = startX; this.y = startY;
+          this.vx = 0; this.vy = 0;
+          this.angle = 0; this.omega = 0;
 
-          this.fuel = 100;
-          this.rpm = 0.1;
-          this.outOfFuelTimer = 0;
+          this.fuel = 100; this.rpm = 0.1; this.outOfFuelTimer = 0;
+          this.prevGas = false; this.prevBrake = false;
+          this.gasImpulseTimer = 0; this.brakeImpulseTimer = 0;
 
-          // Launch jerk envelope: spikes sharply when applying gas/brake from low speed!
-          this.prevGas = false;
-          this.prevBrake = false;
-          this.gasImpulseTimer = 0;
-          this.brakeImpulseTimer = 0;
-
-          // Rear (index 0) and Front (index 1) wheels with independent angular velocity & slip
           this.wheels = [
-            {
-              lx: -this.wheelBase * 0.5, ly: 8, radius: spec.rearRadius,
-              driven: true, comp: 0, prevComp: 0, spin: 0, angVel: 0,
-              onGround: false, wx: 0, wy: 0, slip: 0
-            },
-            {
-              lx: this.wheelBase * 0.5, ly: 8, radius: spec.frontRadius,
-              driven: spec.drive === '4WD' || spec.drive === 'AWD',
-              comp: 0, prevComp: 0, spin: 0, angVel: 0,
-              onGround: false, wx: 0, wy: 0, slip: 0
-            }
+            { lx: -this.wheelBase * 0.5, ly: 8, radius: spec.rearRadius, driven: true, comp: 0, spin: 0, angVel: 0, onGround: false, wx: 0, wy: 0, slip: 0 },
+            { lx: this.wheelBase * 0.5, ly: 8, radius: spec.frontRadius, driven: spec.drive === '4WD' || spec.drive === 'AWD', comp: 0, spin: 0, angVel: 0, onGround: false, wx: 0, wy: 0, slip: 0 }
           ];
 
-          this.airTime = 0;
-          this.airAngleAccum = 0;
-          this.lastAngle = 0;
-          this.dead = false;
-          this.finished = false;
-          this.finishTime = null;
-          this.deathReason = '';
-          this.flips = 0;
-          this.botRecoverTimer = 0;
+          this.airTime = 0; this.airAngleAccum = 0; this.lastAngle = 0;
+          this.dead = false; this.finished = false; this.finishTime = null;
+          this.deathReason = ''; this.flips = 0;
           this.updateWheelWorldPositions();
         }
 
         updateWheelWorldPositions() {
-          const cos = Math.cos(this.angle);
-          const sin = Math.sin(this.angle);
+          const cos = Math.cos(this.angle); const sin = Math.sin(this.angle);
           for (const w of this.wheels) {
             const ext = this.suspRest - w.comp;
-            const localX = w.lx;
-            const localY = w.ly + ext;
-            w.wx = this.x + localX * cos - localY * sin;
-            w.wy = this.y + localX * sin + localY * cos;
+            w.wx = this.x + w.lx * cos - (w.ly + ext) * sin;
+            w.wy = this.y + w.lx * sin + (w.ly + ext) * cos;
           }
         }
 
         getHeadWorldPos() {
-          const cos = Math.cos(this.angle);
-          const sin = Math.sin(this.angle);
+          const cos = Math.cos(this.angle); const sin = Math.sin(this.angle);
           const lx = this.spec.id === 'moto' ? -4 : -6;
           const ly = this.spec.id === 'moto' ? -38 : -34;
-          return {
-            x: this.x + lx * cos - ly * sin,
-            y: this.y + lx * sin + ly * cos
-          };
-        }
-
-        computeBotInput(terrain) {
-          // Smart physics-aware AI driver: manages pitch, wheelies, and hill crests
-          const slopeAhead = terrain.getHeight(this.x + 95) - terrain.getHeight(this.x);
-          let gas = true;
-          let brake = false;
-          const grounded = this.wheels[0].onGround || this.wheels[1].onGround;
-
-          if (!grounded) {
-            // Level out in mid-air
-            if (this.angle < -0.32) { gas = false; brake = true; }
-            else if (this.angle > 0.35) { gas = true; brake = false; }
-            else { gas = false; brake = false; }
-          } else {
-            // Prevent flipping backward on steep climbs or hard launches
-            if (this.angle < -0.58 || (this.angle < -0.35 && this.omega < -1.4)) {
-              gas = false;
-              brake = true;
-            } else if (slopeAhead > 45 && this.vx > this.maxSpeed * 0.72 * this.botSkill) {
-              // Feather throttle slightly before steep downhill drops
-              gas = false;
-            } else if (Math.random() > this.botSkill && this.vx > this.maxSpeed * 0.65) {
-              gas = false;
-            }
-          }
-          return { gas, brake };
+          return { x: this.x + lx * cos - ly * sin, y: this.y + lx * sin + ly * cos };
         }
 
         step(dt, input, terrain, biome, emitParticle, onStunt) {
-          if (this.finished) {
-            // Gently coast to stop after crossing finish line
-            input = { gas: false, brake: this.vx > 20 };
-          }
+          if (this.finished) input = { gas: false, brake: this.vx > 20 };
 
           const gravity = biome.gravity;
-          const hasFuel = this.isBot ? true : this.fuel > 0;
+          const hasFuel = this.fuel > 0;
           const gas = hasFuel && input.gas && !this.dead;
           const brake = hasFuel && input.brake && !this.dead;
 
-          // Trigger launch jerk envelope when gas or brake is freshly pressed
           if (gas && !this.prevGas) this.gasImpulseTimer = 0.28;
           if (brake && !this.prevBrake) this.brakeImpulseTimer = 0.28;
-          this.prevGas = gas;
-          this.prevBrake = brake;
+          this.prevGas = gas; this.prevBrake = brake;
           if (this.gasImpulseTimer > 0) this.gasImpulseTimer = Math.max(0, this.gasImpulseTimer - dt);
           if (this.brakeImpulseTimer > 0) this.brakeImpulseTimer = Math.max(0, this.brakeImpulseTimer - dt);
 
-          // Fuel burn (local players only)
-          if (!this.dead && !this.finished && !this.isBot) {
-            const burn = this.fuelDrainRate * (gas ? 1.3 : 0.68) * dt;
-            this.fuel = Math.max(0, this.fuel - burn);
+          if (!this.dead && !this.finished) {
+            this.fuel = Math.max(0, this.fuel - this.fuelDrainRate * (gas ? 1.3 : 0.68) * dt);
           }
 
-          // Gravity & aerodynamic drag
           this.vy += gravity * dt;
-          const speedSq = this.vx * this.vx + this.vy * this.vy;
-          const aeroDrag = 0.00018 * Math.sqrt(speedSq);
+          const aeroDrag = 0.00018 * Math.hypot(this.vx, this.vy);
           this.vx -= this.vx * aeroDrag * dt;
           this.vy -= this.vy * aeroDrag * dt;
           this.omega *= Math.pow(0.955, dt * 60);
 
-          const cos = Math.cos(this.angle);
-          const sin = Math.sin(this.angle);
+          const cos = Math.cos(this.angle); const sin = Math.sin(this.angle);
           const maxComp = this.suspRest * 0.84;
 
           let groundedCount = 0;
-          let rearGrounded = false;
-          let frontGrounded = false;
+          let rearGrounded = false; let frontGrounded = false;
           let totalForwardSpeed = 0;
 
           for (let i = 0; i < this.wheels.length; i++) {
             const w = this.wheels[i];
-            const fullLocalX = w.lx;
-            const fullLocalY = w.ly + this.suspRest;
-            const fullWx = this.x + fullLocalX * cos - fullLocalY * sin;
-            const fullWy = this.y + fullLocalX * sin + fullLocalY * cos;
-
+            const fullWx = this.x + w.lx * cos - (w.ly + this.suspRest) * sin;
+            const fullWy = this.y + w.lx * sin + (w.ly + this.suspRest) * cos;
             const groundY = terrain.getHeight(fullWx);
             const penetration = (fullWy + w.radius) - groundY;
 
             if (penetration > 0) {
-              w.onGround = true;
-              groundedCount++;
-              if (i === 0) rearGrounded = true;
-              else frontGrounded = true;
+              w.onGround = true; groundedCount++;
+              if (i === 0) rearGrounded = true; else frontGrounded = true;
 
-              w.prevComp = w.comp;
               const comp = Math.min(maxComp, penetration);
               w.comp = comp;
-
-              // Bump-stop impulse if suspension bottoms out on a hard landing
               const excess = penetration - maxComp;
-              if (excess > 0) {
-                this.y -= excess * 0.62;
-                if (this.vy > 0) this.vy *= 0.6;
-              }
+              if (excess > 0) { this.y -= excess * 0.62; if (this.vy > 0) this.vy *= 0.6; }
 
               const norm = terrain.getNormal(fullWx);
-              // Contact patch world vector relative to chassis CG
               const contactX = fullWx - norm.nx * w.radius;
               const contactY = groundY;
-              const rx = contactX - this.x;
-              const ry = contactY - this.y;
+              const rx = contactX - this.x; const ry = contactY - this.y;
 
               const ptVx = this.vx - this.omega * ry;
               const ptVy = this.vy + this.omega * rx;
@@ -1219,46 +1052,31 @@
               const vTan = ptVx * norm.tx + ptVy * norm.ty;
               totalForwardSpeed += vTan;
 
-              // Progressive suspension spring (stiffens near full compression) + asymmetric damping
               const compRatio = comp / maxComp;
               const progStiff = this.suspK * (1 + 0.65 * compRatio * compRatio);
               const dampCoeff = vNormal < 0 ? this.suspC * 1.15 : this.suspC * 0.78;
               const normalForce = Math.max(0, comp * progStiff - vNormal * dampCoeff);
 
-              const fnx = norm.nx * normalForce;
-              const fny = norm.ny * normalForce;
-
+              const fnx = norm.nx * normalForce; const fny = norm.ny * normalForce;
               this.vx += (fnx / this.mass) * dt;
               this.vy += (fny / this.mass) * dt;
               this.omega += ((rx * fny - ry * fnx) / this.inertia) * dt;
 
-              // --- REALISTIC ENGINE TORQUE-SPEED CURVE & REACTION TORQUE ---
-              // Speed ratio determines available engine torque:
-              // Stationary (speedFrac ~ 0) => 100% torque + launch jerk!
-              // High speed (speedFrac -> 1) => low torque, minimal pitch jerk!
               const speedFrac = Math.min(1, Math.abs(vTan) / this.maxSpeed);
               const torqueCurve = Math.pow(Math.max(0, 1 - speedFrac), 1.38);
-              const stationaryFactor = Math.exp(-Math.abs(vTan) / 145); // 1.0 when stationary, decays smoothly in motion
+              const stationaryFactor = Math.exp(-Math.abs(vTan) / 145);
 
-              // Max tire traction via Coulomb friction: F_max = mu * F_normal
-              const mu = biome.friction * this.grip;
-              const maxFrictionForce = Math.max(180, normalForce * mu * 1.45);
-
+              const maxFrictionForce = Math.max(180, normalForce * biome.friction * this.grip * 1.45);
               let desiredTangentialForce = 0;
-              let wheelMotorAccel = 0;
 
               if (gas && w.driven) {
                 const driveShare = this.spec.drive === 'RWD' ? 1.0 : (i === 0 ? 0.62 : 0.45);
                 const launchBurst = 1 + 0.55 * stationaryFactor * (this.gasImpulseTimer > 0 ? 1.25 : 0.75);
                 desiredTangentialForce = this.launchTorque * driveShare * (0.28 + 0.72 * torqueCurve) * launchBurst;
-                wheelMotorAccel = desiredTangentialForce / w.radius;
               } else if (brake) {
                 if (vTan > 28) {
-                  // Braking while moving forward -> strong braking force on both wheels
-                  const brakeShare = i === 1 ? 0.65 : 0.45; // front brake bias!
-                  desiredTangentialForce = -this.launchTorque * 1.35 * brakeShare;
+                  desiredTangentialForce = -this.launchTorque * 1.35 * (i === 1 ? 0.65 : 0.45);
                 } else if (w.driven) {
-                  // Reversing from stationary or slow reverse
                   const revFrac = Math.min(1, Math.abs(vTan) / (this.maxSpeed * 0.48));
                   const revCurve = Math.pow(Math.max(0, 1 - revFrac), 1.35);
                   const revLaunch = 1 + 0.45 * stationaryFactor * (this.brakeImpulseTimer > 0 ? 1.2 : 0.7);
@@ -1266,44 +1084,26 @@
                   desiredTangentialForce = -this.launchTorque * 0.72 * driveShare * (0.25 + 0.75 * revCurve) * revLaunch;
                 }
               } else {
-                // Rolling resistance
                 desiredTangentialForce = -vTan * 0.95;
               }
 
-              // Clamp tangential force by Coulomb tire grip (causes realistic wheelspin on ice/steep slopes!)
               const actualForce = Math.max(-maxFrictionForce, Math.min(maxFrictionForce, desiredTangentialForce));
               w.slip = Math.abs(desiredTangentialForce - actualForce) / Math.max(1, maxFrictionForce);
 
-              const ftx = norm.tx * actualForce;
-              const fty = norm.ty * actualForce;
+              const ftx = norm.tx * actualForce; const fty = norm.ty * actualForce;
               this.vx += (ftx / this.mass) * dt;
               this.vy += (fty / this.mass) * dt;
+              this.omega += (((rx * fty - ry * ftx) * 0.48) / this.inertia) * dt;
 
-              // WEIGHT TRANSFER TORQUE from contact patch being cgHeight below CG:
-              // Pushing forward at bottom of wheel naturally pitches nose UP (negative omega in Y-down canvas)
-              const weightTransferTorque = (rx * fty - ry * ftx) * 0.48;
-              this.omega += (weightTransferTorque / this.inertia) * dt;
-
-              // Wheel visual & physical spin (spins faster than ground when slipping!)
               const groundOmega = vTan / Math.max(10, w.radius);
-              const spinBoost = w.slip > 0.05 ? Math.sign(desiredTangentialForce) * w.slip * 18 : 0;
-              w.angVel = groundOmega + spinBoost;
+              w.angVel = groundOmega + (w.slip > 0.05 ? Math.sign(desiredTangentialForce) * w.slip * 18 : 0);
               w.spin += w.angVel * dt;
 
-              // Emit dirt/snow/sand spray when accelerating or slipping
               if (this.isLocal && (gas || brake) && (Math.abs(vTan) > 30 || w.slip > 0.1) && Math.random() < (0.22 + w.slip * 0.45)) {
-                emitParticle(
-                  contactX - norm.tx * 6,
-                  groundY - 2,
-                  -norm.tx * (50 + Math.random() * 90 + w.slip * 80),
-                  -45 - Math.random() * 75,
-                  biome.crustTop,
-                  2.5 + Math.random() * 3.5
-                );
+                emitParticle(contactX - norm.tx * 6, groundY - 2, -norm.tx * (50 + Math.random() * 90 + w.slip * 80), -45 - Math.random() * 75, biome.crustTop, 2.5 + Math.random() * 3.5);
               }
             } else {
-              w.onGround = false;
-              w.slip = 0;
+              w.onGround = false; w.slip = 0;
               w.comp += (0 - w.comp) * Math.min(1, dt * 16);
               if (gas && w.driven) w.angVel = Math.min(34, w.angVel + 36 * dt);
               else if (brake && w.driven) w.angVel = Math.max(-24, w.angVel - 32 * dt);
@@ -1312,34 +1112,25 @@
             }
           }
 
-          // --- EXPLICIT STATIONARY LAUNCH WHEELIE JERK & BRAKE NOSE-DIVE ---
-          // Models Newton's 3rd Law drivetrain reaction torque:
-          // High when stationary (front lifts sharply on Gas, nose dives on Brake/Reverse),
-          // tapering smoothly to a small nudge when already cruising at speed!
+          // Stationary launch wheelie jerk & brake nose-dive (tapering with speed!)
           if (groundedCount > 0) {
             const avgV = totalForwardSpeed / groundedCount;
-            const lowSpeedFactor = Math.exp(-Math.abs(avgV) / 170); // ~1.0 stationary, ~0.25 at medium speed, ~0.05 at top speed
+            const lowSpeedFactor = Math.exp(-Math.abs(avgV) / 170);
             const surge = this.gasImpulseTimer > 0 ? 1.45 : 0.85;
             const brakeSurge = this.brakeImpulseTimer > 0 ? 1.4 : 0.85;
 
             if (gas && rearGrounded) {
-              // Negative omega = pitch nose UP (wheelie!)
-              const wheelieTorque = -this.spec.reactionPitch * (0.16 + 0.84 * lowSpeedFactor) * surge;
-              this.omega += wheelieTorque * dt;
+              this.omega += -this.spec.reactionPitch * (0.16 + 0.84 * lowSpeedFactor) * surge * dt;
             } else if (brake) {
               if (avgV > 35 && frontGrounded) {
-                // Braking while moving forward -> nose dives DOWN sharply (+omega)
-                const speedBrakeFactor = Math.min(1.25, avgV / 260);
-                this.omega += this.spec.brakeDive * speedBrakeFactor * brakeSurge * dt;
+                this.omega += this.spec.brakeDive * Math.min(1.25, avgV / 260) * brakeSurge * dt;
               } else if (avgV <= 35 && (frontGrounded || rearGrounded)) {
-                // Reversing from stationary -> nose dips / rear squats (+omega), tapering as reverse speed grows
                 const revStationary = Math.exp(-Math.abs(avgV) / 130);
                 this.omega += this.spec.brakeDive * 0.72 * (0.15 + 0.85 * revStationary) * brakeSurge * dt;
               }
             }
           }
 
-          // Mid-air pitch control & Stunt tracking
           if (groundedCount === 0) {
             if (gas) this.omega -= this.spec.airTorque * dt;
             else if (brake) this.omega += this.spec.airTorque * dt;
@@ -1352,197 +1143,260 @@
 
             if (Math.abs(this.airAngleAccum) >= Math.PI * 1.78) {
               const isBackflip = this.airAngleAccum < 0;
-              this.airAngleAccum = 0;
-              this.flips++;
-              if (this.isLocal && onStunt) {
-                onStunt(isBackflip ? 'BACKFLIP! +500' : 'FRONTFLIP! +500', 500, true);
-              }
+              this.airAngleAccum = 0; this.flips++;
+              if (this.isLocal && onStunt) onStunt(isBackflip ? 'BACKFLIP! +500' : 'FRONTFLIP! +500', 500, true);
             }
           } else {
             if (this.airTime >= 1.15 && !this.dead && this.isLocal && onStunt) {
-              const bonus = Math.min(500, Math.floor(this.airTime * 100));
-              onStunt(`AIR TIME! +${bonus}`, bonus, false);
+              onStunt(`AIR TIME! +${Math.min(500, Math.floor(this.airTime * 100))}`, Math.min(500, Math.floor(this.airTime * 100)), false);
             }
-            this.airTime = 0;
-            this.airAngleAccum = 0;
+            this.airTime = 0; this.airAngleAccum = 0;
           }
           this.lastAngle = this.angle;
 
-          // Clamp angular velocity
           this.omega = Math.max(-7.8, Math.min(7.8, this.omega));
+          this.x += this.vx * dt; this.y += this.vy * dt; this.angle += this.omega * dt;
 
-          // Integrate chassis pose
-          this.x += this.vx * dt;
-          this.y += this.vy * dt;
-          this.angle += this.omega * dt;
+          if (this.x < -70) { this.x = -70; if (this.vx < 0) this.vx = 0; }
 
-          if (this.x < -70) {
-            this.x = -70;
-            if (this.vx < 0) this.vx = 0;
-          }
-
-          // Chassis roof/bumper collision
-          const cos2 = Math.cos(this.angle);
-          const sin2 = Math.sin(this.angle);
-          const bodyPts = [
-            { lx: -36, ly: -15 },
-            { lx: 36, ly: -13 },
-            { lx: -44, ly: 6 },
-            { lx: 44, ly: 6 }
-          ];
-          for (const bp of bodyPts) {
+          const cos2 = Math.cos(this.angle); const sin2 = Math.sin(this.angle);
+          for (const bp of [{ lx: -36, ly: -15 }, { lx: 36, ly: -13 }, { lx: -44, ly: 6 }, { lx: 44, ly: 6 }]) {
             const wx = this.x + bp.lx * cos2 - bp.ly * sin2;
             const wy = this.y + bp.lx * sin2 + bp.ly * cos2;
             const gy = terrain.getHeight(wx);
             if (wy > gy) {
-              const pen = wy - gy;
-              this.y -= pen * 0.65;
+              this.y -= (wy - gy) * 0.65;
               if (this.vy > 0) this.vy *= -0.18;
-              this.vx *= 0.88;
-              this.omega *= 0.8;
+              this.vx *= 0.88; this.omega *= 0.8;
             }
           }
 
-          // Driver head collision check
           if (!this.dead && !this.finished) {
             const head = this.getHeadWorldPos();
             if (head.y + 10 > terrain.getHeight(head.x)) {
-              if (this.isBot) {
-                // Bots auto-right themselves after a brief tumble penalty so races stay lively
-                this.botRecoverTimer += dt;
-                if (this.botRecoverTimer > 0.35) {
-                  this.angle = 0;
-                  this.omega = 0;
-                  this.vx *= 0.35;
-                  this.vy = -120;
-                  this.y = terrain.getHeight(this.x) - this.suspRest - this.wheels[0].radius - 16;
-                  this.botRecoverTimer = 0;
-                }
-              } else {
-                this.dead = true;
-                this.deathReason = 'Driver Down!';
-              }
-            } else {
-              this.botRecoverTimer = 0;
+              this.dead = true; this.deathReason = 'Driver Down!';
             }
           }
 
-          // Out of fuel stop check (local player)
-          if (!this.dead && !this.finished && !this.isBot && this.fuel <= 0) {
+          if (!this.dead && !this.finished && this.fuel <= 0) {
             if (Math.hypot(this.vx, this.vy) < 26) {
               this.outOfFuelTimer += dt;
-              if (this.outOfFuelTimer > 1.6) {
-                this.dead = true;
-                this.deathReason = 'Out of Fuel!';
-              }
-            } else {
-              this.outOfFuelTimer = 0;
-            }
+              if (this.outOfFuelTimer > 1.6) { this.dead = true; this.deathReason = 'Out of Fuel!'; }
+            } else { this.outOfFuelTimer = 0; }
           }
 
-          // RPM smoothing
-          const targetRpm = gas
-            ? Math.min(1, 0.38 + Math.abs(this.vx) / this.maxSpeed * 0.72)
-            : brake
-            ? Math.min(0.75, 0.25 + Math.abs(this.vx) / this.maxSpeed * 0.45)
+          const targetRpm = gas ? Math.min(1, 0.38 + Math.abs(this.vx) / this.maxSpeed * 0.72)
+            : brake ? Math.min(0.75, 0.25 + Math.abs(this.vx) / this.maxSpeed * 0.45)
             : 0.1 + Math.min(0.24, Math.abs(this.vx) / this.maxSpeed * 0.24);
           this.rpm += (targetRpm - this.rpm) * Math.min(1, dt * 11);
 
-          // Exhaust puff for local player
           if (this.isLocal && gas && Math.random() < 0.2) {
-            const exX = this.x - 46 * cos2 - 4 * sin2;
-            const exY = this.y - 46 * sin2 + 4 * cos2;
-            emitParticle(exX, exY, -cos2 * 45 + (Math.random() - 0.5) * 20, -sin2 * 45 - 20, 'rgba(226,232,240,0.65)', 4 + Math.random() * 4);
+            emitParticle(this.x - 46 * cos2 - 4 * sin2, this.y - 46 * sin2 + 4 * cos2, -cos2 * 45 + (Math.random() - 0.5) * 20, -sin2 * 45 - 20, 'rgba(226,232,240,0.65)', 4 + Math.random() * 4);
           }
-
           this.updateWheelWorldPositions();
         }
       }
 
       // ============================================================
-      // 5. LIVE MULTI-TAB MULTIPLAYER (BROADCAST CHANNEL — GHOST SYNC)
+      // 5. MULTIPLAYER NETWORKING (CROSS-DEVICE WEBRTC + MULTI-TAB BROADCAST)
       // ============================================================
       const localPeerId = 'P_' + Math.random().toString(36).slice(2, 9);
       let mpChannel = null;
-      const remotePeers = new Map(); // peerId -> { name, vehicleId, x, y, angle, wheels, finished, finishTime, lastSeen }
+      let rtcPeer = null;
+      let rtcDataChannel = null;
+      let rtcRole = null; // 'host' | 'guest'
+      const remotePeers = new Map();
       let lastBroadcastTime = 0;
 
       function encodeRoomCode(seed, biomeKey, finishKm) {
         const bCode = (BIOMES[biomeKey] && BIOMES[biomeKey].code) || 'CO';
-        const kmPart = finishKm > 0 ? `${finishKm}K` : 'END';
-        return `${bCode}-${seed}-${kmPart}`;
+        return `${bCode}-${seed}-${finishKm}K`;
       }
 
       function decodeRoomCode(raw) {
-        const clean = (raw || '').trim().toUpperCase();
-        const parts = clean.split('-');
+        const parts = (raw || '').trim().toUpperCase().split('-');
         if (parts.length < 2) return null;
         const bKey = Object.keys(BIOMES).find(k => BIOMES[k].code === parts[0]);
         const seed = parseInt(parts[1], 10);
         if (!bKey || !Number.isFinite(seed) || seed < 1) return null;
         let km = saveData.finishKm;
         if (parts[2]) {
-          if (parts[2] === 'END') km = 0;
-          else {
-            const parsedKm = parseFloat(parts[2].replace('K', ''));
-            if (Number.isFinite(parsedKm) && parsedKm >= 0.5 && parsedKm <= 25) km = parsedKm;
-          }
+          const parsedKm = parseFloat(parts[2].replace('K', ''));
+          if (Number.isFinite(parsedKm) && parsedKm >= 0.5 && parsedKm <= 25) km = parsedKm;
         }
         return { biomeKey: bKey, seed, finishKm: km };
       }
 
-      function connectRoomChannel(roomCode) {
-        if (mpChannel) {
-          try { mpChannel.close(); } catch (e) {}
-          mpChannel = null;
+      function handleIncomingPeerMessage(msg) {
+        if (!msg || msg.peerId === localPeerId) return;
+        if (msg.type === 'room_sync' && msg.roomCode) {
+          const parsed = decodeRoomCode(msg.roomCode);
+          if (parsed) {
+            saveData.playMode = 'multiplayer';
+            saveData.selectedBiome = parsed.biomeKey;
+            saveData.finishKm = parsed.finishKm;
+            currentSeed = parsed.seed;
+            persistSave();
+            renderStartMenus();
+            setupWorld(currentSeed);
+            showToast(`Synced track ${msg.roomCode} from host!`);
+          }
+        } else if (msg.type === 'state') {
+          remotePeers.set(msg.peerId, {
+            peerId: msg.peerId,
+            name: msg.name || 'Racer',
+            vehicleId: VEHICLES[msg.vehicleId] ? msg.vehicleId : 'jeep',
+            x: msg.x, y: msg.y, angle: msg.angle,
+            wheels: msg.wheels || [],
+            finished: Boolean(msg.finished),
+            finishTime: msg.finishTime || null,
+            lastSeen: performance.now()
+          });
+          updatePeerBadge();
+        } else if (msg.type === 'leave') {
+          remotePeers.delete(msg.peerId);
+          updatePeerBadge();
         }
-        remotePeers.clear();
-        if (typeof BroadcastChannel === 'undefined') return;
+      }
+
+      function connectRoomChannel(roomCode) {
+        if (mpChannel) { try { mpChannel.close(); } catch (e) {} mpChannel = null; }
+        if (typeof BroadcastChannel === 'undefined' || saveData.playMode !== 'multiplayer') return;
         try {
           mpChannel = new BroadcastChannel('hill_climb_room_' + roomCode);
-          mpChannel.onmessage = (ev) => {
-            const msg = ev.data;
-            if (!msg || msg.peerId === localPeerId) return;
-            if (msg.type === 'state') {
-              remotePeers.set(msg.peerId, {
-                peerId: msg.peerId,
-                name: msg.name || 'Racer',
-                vehicleId: VEHICLES[msg.vehicleId] ? msg.vehicleId : 'jeep',
-                x: msg.x, y: msg.y, angle: msg.angle,
-                wheels: msg.wheels || [],
-                finished: Boolean(msg.finished),
-                finishTime: msg.finishTime || null,
-                lastSeen: performance.now()
-              });
-              updatePeerBadge();
-            } else if (msg.type === 'leave') {
-              remotePeers.delete(msg.peerId);
-              updatePeerBadge();
-            }
-          };
-        } catch (e) {
-          mpChannel = null;
-        }
+          mpChannel.onmessage = (ev) => handleIncomingPeerMessage(ev.data);
+        } catch (e) { mpChannel = null; }
         updatePeerBadge();
       }
 
-      function broadcastLocalState(nowMs) {
-        if (!mpChannel || !car || nowMs - lastBroadcastTime < 33) return;
-        lastBroadcastTime = nowMs;
+      function setupRtcDataChannel(ch) {
+        rtcDataChannel = ch;
+        ch.onopen = () => {
+          elWebrtcStatus.textContent = 'Connected Live!';
+          elWebrtcStatus.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 shrink-0';
+          showToast('Cross-device peer connected!');
+          if (rtcRole === 'host') {
+            try { ch.send(JSON.stringify({ type: 'room_sync', peerId: localPeerId, roomCode: currentRoomCode })); } catch (e) {}
+          }
+        };
+        ch.onclose = () => {
+          elWebrtcStatus.textContent = 'Disconnected';
+          elWebrtcStatus.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-400/30 shrink-0';
+        };
+        ch.onmessage = (ev) => {
+          try { handleIncomingPeerMessage(JSON.parse(ev.data)); } catch (e) {}
+        };
+      }
+
+      async function createRtcHostInvite() {
+        if (typeof RTCPeerConnection === 'undefined') {
+          showToast('WebRTC not supported in this browser');
+          return;
+        }
+        if (rtcPeer) { try { rtcPeer.close(); } catch (e) {} }
+        rtcRole = 'host';
+        elWebrtcStatus.textContent = 'Generating...';
+        rtcPeer = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+        const ch = rtcPeer.createDataChannel('hillclimb');
+        setupRtcDataChannel(ch);
+
+        const offer = await rtcPeer.createOffer();
+        await rtcPeer.setLocalDescription(offer);
+        await new Promise((resolve) => {
+          if (rtcPeer.iceGatheringState === 'complete') resolve();
+          else {
+            const timer = setTimeout(resolve, 1800);
+            rtcPeer.onicegatheringstatechange = () => {
+              if (rtcPeer.iceGatheringState === 'complete') { clearTimeout(timer); resolve(); }
+            };
+          }
+        });
+        const payload = btoa(JSON.stringify({ sdp: rtcPeer.localDescription, room: currentRoomCode }));
+        elRtcExchangeBox.classList.remove('hidden');
+        elRtcExchangeBox.classList.add('flex');
+        elRtcInstructions.textContent = 'Step 1: Copy & send this Invite Code to your friend. Then paste their Reply Code below & click Apply.';
+        elRtcCodeInput.value = payload;
+        elWebrtcStatus.textContent = 'Waiting for Reply';
+        copyText(payload);
+      }
+
+      function prepareRtcGuestJoin() {
+        if (typeof RTCPeerConnection === 'undefined') {
+          showToast('WebRTC not supported in this browser');
+          return;
+        }
+        rtcRole = 'guest';
+        elRtcExchangeBox.classList.remove('hidden');
+        elRtcExchangeBox.classList.add('flex');
+        elRtcInstructions.textContent = 'Paste your friend\'s Invite Code below and click Apply to generate your Reply Code.';
+        elRtcCodeInput.value = '';
+        elRtcCodeInput.focus();
+      }
+
+      async function confirmRtcExchange() {
+        const raw = elRtcCodeInput.value.trim();
+        if (!raw) { showToast('Paste a code first'); return; }
         try {
-          mpChannel.postMessage({
-            type: 'state',
-            peerId: localPeerId,
-            name: saveData.playerName,
-            vehicleId: saveData.selectedVehicle,
-            x: car.x,
-            y: car.y,
-            angle: car.angle,
-            wheels: car.wheels.map(w => ({ wx: w.wx, wy: w.wy, spin: w.spin, radius: w.radius })),
-            finished: car.finished,
-            finishTime: car.finishTime
-          });
-        } catch (e) {}
+          const decoded = JSON.parse(atob(raw));
+          if (rtcRole === 'guest' && decoded.sdp && decoded.sdp.type === 'offer') {
+            if (decoded.room) {
+              const parsed = decodeRoomCode(decoded.room);
+              if (parsed) {
+                saveData.playMode = 'multiplayer';
+                saveData.selectedBiome = parsed.biomeKey;
+                saveData.finishKm = parsed.finishKm;
+                currentSeed = parsed.seed;
+                persistSave(); renderStartMenus(); setupWorld(currentSeed);
+              }
+            }
+            if (rtcPeer) { try { rtcPeer.close(); } catch (e) {} }
+            rtcPeer = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+            rtcPeer.ondatachannel = (ev) => setupRtcDataChannel(ev.channel);
+            await rtcPeer.setRemoteDescription(decoded.sdp);
+            const answer = await rtcPeer.createAnswer();
+            await rtcPeer.setLocalDescription(answer);
+            await new Promise((resolve) => {
+              if (rtcPeer.iceGatheringState === 'complete') resolve();
+              else {
+                const timer = setTimeout(resolve, 1800);
+                rtcPeer.onicegatheringstatechange = () => {
+                  if (rtcPeer.iceGatheringState === 'complete') { clearTimeout(timer); resolve(); }
+                };
+              }
+            });
+            const replyPayload = btoa(JSON.stringify({ sdp: rtcPeer.localDescription }));
+            elRtcCodeInput.value = replyPayload;
+            elRtcInstructions.textContent = 'Copy this Reply Code and send it back to the Host!';
+            elWebrtcStatus.textContent = 'Send Reply to Host';
+            copyText(replyPayload);
+          } else if (rtcRole === 'host' && decoded.sdp && decoded.sdp.type === 'answer' && rtcPeer) {
+            await rtcPeer.setRemoteDescription(decoded.sdp);
+            elWebrtcStatus.textContent = 'Connecting...';
+            showToast('Linking devices...');
+          } else {
+            showToast('Invalid Invite/Reply code');
+          }
+        } catch (e) {
+          showToast('Could not parse code — copy the full text');
+        }
+      }
+
+      function broadcastLocalState(nowMs) {
+        if (saveData.playMode !== 'multiplayer' || !car || nowMs - lastBroadcastTime < 33) return;
+        lastBroadcastTime = nowMs;
+        const msg = {
+          type: 'state',
+          peerId: localPeerId,
+          name: saveData.playerName,
+          vehicleId: saveData.selectedVehicle,
+          x: car.x, y: car.y, angle: car.angle,
+          wheels: car.wheels.map(w => ({ wx: w.wx, wy: w.wy, spin: w.spin, radius: w.radius })),
+          finished: car.finished, finishTime: car.finishTime
+        };
+        if (mpChannel) { try { mpChannel.postMessage(msg); } catch (e) {} }
+        if (rtcDataChannel && rtcDataChannel.readyState === 'open') {
+          try { rtcDataChannel.send(JSON.stringify(msg)); } catch (e) {}
+        }
       }
 
       // ============================================================
@@ -1558,11 +1412,13 @@
       const elHudCoins = document.getElementById('hud-coins');
       const elHudDist = document.getElementById('hud-distance');
       const elHudGoalLabel = document.getElementById('hud-goal-label');
+      const elHudMpStats = document.getElementById('hud-mp-stats');
       const elHudRank = document.getElementById('hud-rank');
       const elHudTimer = document.getElementById('hud-timer');
       const elHudBest = document.getElementById('hud-best');
       const elHudSeed = document.getElementById('hud-seed');
       const elHudRoomCode = document.getElementById('hud-room-code');
+      const btnCopyRoomHud = document.getElementById('btn-copy-room-hud');
       const elHudSpeed = document.getElementById('hud-speed');
       const elRpmBar = document.getElementById('rpm-bar');
       const elHudBiome = document.getElementById('hud-biome');
@@ -1575,19 +1431,30 @@
       const overlayGameOver = document.getElementById('overlay-gameover');
       const overlayGarage = document.getElementById('overlay-garage');
 
+      const btnModeSolo = document.getElementById('mode-solo-btn');
+      const btnModeMp = document.getElementById('mode-mp-btn');
+      const elMpSubtabs = document.getElementById('mp-subtabs');
+      const btnPlay = document.getElementById('btn-play');
+
       const elStartCoins = document.getElementById('start-coins');
       const elStartSeed = document.getElementById('start-seed-display');
       const elPathDesc = document.getElementById('path-desc-label');
       const elVehicleSpec = document.getElementById('vehicle-spec-label');
       const elFinishSummary = document.getElementById('finish-summary-label');
       const elLivePeersBadge = document.getElementById('live-peers-badge');
+      const elWebrtcStatus = document.getElementById('webrtc-status');
+      const elRtcExchangeBox = document.getElementById('rtc-exchange-box');
+      const elRtcInstructions = document.getElementById('rtc-instructions');
+      const elRtcCodeInput = document.getElementById('rtc-code-input');
 
       const elGoBadge = document.getElementById('go-badge');
       const elGoTitle = document.getElementById('go-title');
       const elGoDist = document.getElementById('go-distance');
-      const elGoTime = document.getElementById('go-time');
+      const elGoSecondLabel = document.getElementById('go-second-label');
+      const elGoSecondVal = document.getElementById('go-second-val');
       const elGoCoins = document.getElementById('go-coins');
       const elGoFlips = document.getElementById('go-flips');
+      const elGoLeaderboardWrap = document.getElementById('go-leaderboard-wrap');
       const elGoLeaderboard = document.getElementById('go-leaderboard');
 
       const elGarageCoins = document.getElementById('garage-coins');
@@ -1599,7 +1466,6 @@
       const inputCustomKm = document.getElementById('input-custom-km');
       const inputPlayerName = document.getElementById('input-player-name');
       const inputRoomCode = document.getElementById('input-room-code');
-      const selectBotCount = document.getElementById('select-bot-count');
       const btnToggle2P = document.getElementById('btn-toggle-2p');
 
       const btnGas = document.getElementById('btn-gas');
@@ -1619,7 +1485,6 @@
       let terrain = null;
       let car = null;
       let carP2 = null;
-      let bots = [];
 
       let camera = { x: 0, y: 200, zoom: 1 };
       let inputP1 = { gas: false, brake: false };
@@ -1628,66 +1493,49 @@
       let floatTexts = [];
       let stars = [];
 
-      let runCoins = 0;
-      let runDistance = 0;
-      let runFlips = 0;
-      let raceElapsed = 0;
-      let lowFuelBeepAccum = 0;
-      let animFrameId = null;
-      let lastFrameTime = 0;
-      let toastTimer = null;
+      let runCoins = 0; let runDistance = 0; let runFlips = 0;
+      let raceElapsed = 0; let lowFuelBeepAccum = 0;
+      let animFrameId = null; let lastFrameTime = 0; let toastTimer = null;
 
       function showToast(msg) {
         elToast.textContent = msg;
         elToast.style.opacity = '1';
         if (toastTimer) clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => { elToast.style.opacity = '0'; }, 1800);
+        toastTimer = setTimeout(() => { elToast.style.opacity = '0'; }, 2000);
       }
 
       function copyText(text) {
         if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text).then(() => showToast(`Copied ${text}`)).catch(() => fallbackCopy(text));
-        } else {
-          fallbackCopy(text);
-        }
+          navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard!')).catch(() => fallbackCopy(text));
+        } else { fallbackCopy(text); }
       }
 
       function fallbackCopy(text) {
         const ta = document.createElement('textarea');
-        ta.value = text;
-        ta.style.position = 'fixed';
-        ta.style.opacity = '0';
-        document.body.appendChild(ta);
-        ta.select();
-        try { document.execCommand('copy'); showToast(`Copied ${text}`); } catch (e) {}
+        ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); showToast('Copied to clipboard!'); } catch (e) {}
         document.body.removeChild(ta);
       }
 
       function updatePeerBadge() {
-        const count = remotePeers.size;
-        elLivePeersBadge.textContent = count > 0 ? `${count} Live Tab${count > 1 ? 's' : ''} Connected` : 'Open another tab & Join!';
+        const count = remotePeers.size + (saveData.twoPlayer ? 1 : 0);
+        elLivePeersBadge.textContent = count > 0 ? `${count} Player${count > 1 ? 's' : ''} Joined` : '0 Players Joined';
       }
 
       function formatTime(sec) {
         if (!Number.isFinite(sec) || sec < 0) return '00:00.0';
-        const m = Math.floor(sec / 60);
-        const s = Math.floor(sec % 60);
-        const d = Math.floor((sec * 10) % 10);
+        const m = Math.floor(sec / 60); const s = Math.floor(sec % 60); const d = Math.floor((sec * 10) % 10);
         return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${d}`;
       }
 
       function ordinal(n) {
-        if (n === 1) return '1st';
-        if (n === 2) return '2nd';
-        if (n === 3) return '3rd';
-        return `${n}th`;
+        if (n === 1) return '1st'; if (n === 2) return '2nd'; if (n === 3) return '3rd'; return `${n}th`;
       }
 
       function initStars() {
         stars = [];
-        for (let i = 0; i < 65; i++) {
-          stars.push({ x: Math.random(), y: Math.random() * 0.58, r: 0.8 + Math.random() * 1.8, a: 0.35 + Math.random() * 0.65 });
-        }
+        for (let i = 0; i < 65; i++) stars.push({ x: Math.random(), y: Math.random() * 0.58, r: 0.8 + Math.random() * 1.8, a: 0.35 + Math.random() * 0.65 });
       }
 
       function resizeCanvas() {
@@ -1726,23 +1574,17 @@
             finished: carP2.finished, finishTime: carP2.finishTime, color: '#facc15', isSelf: false
           });
         }
-        bots.forEach((b, i) => {
-          list.push({
-            id: 'bot_' + i, name: b.name, vehicle: b.spec.name,
-            x: b.x, dist: Math.max(0, Math.floor((b.x - 120) / PX_PER_METER)),
-            finished: b.finished, finishTime: b.finishTime, color: b.ghostColor, isSelf: false
-          });
-        });
-        const now = performance.now();
-        for (const [pid, rp] of remotePeers.entries()) {
-          if (now - rp.lastSeen > 8000) continue;
-          list.push({
-            id: pid, name: rp.name + ' (Live)', vehicle: VEHICLES[rp.vehicleId].name,
-            x: rp.x, dist: Math.max(0, Math.floor((rp.x - 120) / PX_PER_METER)),
-            finished: rp.finished, finishTime: rp.finishTime, color: '#38bdf8', isSelf: false
-          });
+        if (saveData.playMode === 'multiplayer') {
+          const now = performance.now();
+          for (const [pid, rp] of remotePeers.entries()) {
+            if (now - rp.lastSeen > 8000) continue;
+            list.push({
+              id: pid, name: rp.name, vehicle: VEHICLES[rp.vehicleId].name,
+              x: rp.x, dist: Math.max(0, Math.floor((rp.x - 120) / PX_PER_METER)),
+              finished: rp.finished, finishTime: rp.finishTime, color: '#38bdf8', isSelf: false
+            });
+          }
         }
-        // Sort: finished racers by earliest finishTime, then by farthest x
         list.sort((a, b) => {
           if (a.finished && b.finished) return (a.finishTime || 9999) - (b.finishTime || 9999);
           if (a.finished) return -1;
@@ -1754,7 +1596,9 @@
 
       function setupWorld(newSeed) {
         if (typeof newSeed === 'number') currentSeed = newSeed;
-        const finishMeters = Math.round(saveData.finishKm * 1000);
+        const isMP = saveData.playMode === 'multiplayer';
+        const finishMeters = isMP ? Math.round(saveData.finishKm * 1000) : 0; // Solo has NO finish line!
+
         currentRoomCode = encodeRoomCode(currentSeed, saveData.selectedBiome, saveData.finishKm);
         connectRoomChannel(currentRoomCode);
 
@@ -1762,43 +1606,17 @@
         const spec = VEHICLES[saveData.selectedVehicle];
         car = new Vehicle(spec, saveData.upgrades, 120, terrain, { name: saveData.playerName, isLocal: true });
 
-        // Optional local 2-player ghost car
         carP2 = null;
-        if (saveData.twoPlayer) {
+        if (isMP && saveData.twoPlayer) {
           const p2Keys = Object.keys(VEHICLES).filter(k => k !== saveData.selectedVehicle);
-          const p2Spec = VEHICLES[p2Keys[0] || 'buggy'];
-          carP2 = new Vehicle(p2Spec, saveData.upgrades, 120, terrain, {
+          carP2 = new Vehicle(VEHICLES[p2Keys[0] || 'buggy'], saveData.upgrades, 120, terrain, {
             name: 'Player 2', isLocal: false, isP2: true, ghostColor: '#facc15'
           });
         }
 
-        // Spawn AI Ghost Competitors (zero collision!)
-        bots = [];
-        const vKeys = Object.keys(VEHICLES);
-        for (let i = 0; i < saveData.botCount; i++) {
-          const bSpec = VEHICLES[vKeys[(i + currentSeed) % vKeys.length]];
-          const botUpgrades = {
-            engine: Math.min(5, Math.max(1, saveData.upgrades.engine + (i % 2 === 0 ? 0 : -1))),
-            suspension: saveData.upgrades.suspension,
-            tires: saveData.upgrades.tires,
-            fuel: 5
-          };
-          const bot = new Vehicle(bSpec, botUpgrades, 120, terrain, {
-            name: BOT_NAMES[i % BOT_NAMES.length],
-            isBot: true,
-            ghostColor: BOT_COLORS[i % BOT_COLORS.length],
-            botSkill: 0.78 + (i / Math.max(1, saveData.botCount)) * 0.2
-          });
-          bots.push(bot);
-        }
-
-        particles = [];
-        floatTexts = [];
-        runCoins = 0;
-        runDistance = 0;
-        runFlips = 0;
-        raceElapsed = 0;
-        lowFuelBeepAccum = 0;
+        particles = []; floatTexts = [];
+        runCoins = 0; runDistance = 0; runFlips = 0;
+        raceElapsed = 0; lowFuelBeepAccum = 0;
 
         camera.x = car.x + width * 0.16;
         camera.y = car.y - 20;
@@ -1808,18 +1626,28 @@
       }
 
       function updateSeedAndRoomUI() {
+        const isMP = saveData.playMode === 'multiplayer';
         elHudSeed.textContent = `#${currentSeed}`;
         elStartSeed.textContent = `#${currentSeed}`;
         elHudRoomCode.textContent = currentRoomCode;
         inputRoomCode.value = currentRoomCode;
-        const finishMeters = Math.round(saveData.finishKm * 1000);
-        if (finishMeters > 0) {
+
+        if (isMP) {
+          const finishMeters = Math.round(saveData.finishKm * 1000);
           elHudGoalLabel.textContent = `/ ${finishMeters}m`;
           elProgressFinish.textContent = `${saveData.finishKm} km 🏁`;
           elProgressWrap.classList.remove('hidden');
+          elHudMpStats.classList.remove('hidden');
+          elHudMpStats.classList.add('flex');
+          btnCopyRoomHud.classList.remove('hidden');
+          btnCopyRoomHud.classList.add('flex');
         } else {
           elHudGoalLabel.textContent = 'm (Endless)';
           elProgressWrap.classList.add('hidden');
+          elHudMpStats.classList.add('hidden');
+          elHudMpStats.classList.remove('flex');
+          btnCopyRoomHud.classList.add('hidden');
+          btnCopyRoomHud.classList.remove('flex');
         }
       }
 
@@ -1851,17 +1679,15 @@
         const rpmPct = car ? Math.max(8, Math.min(100, Math.round(car.rpm * 100))) : 10;
         elRpmBar.style.width = `${rpmPct}%`;
 
-        // Update rank & progress bar dots
-        const racers = getAllRacersSummary();
-        const myIdx = racers.findIndex(r => r.isSelf);
-        elHudRank.textContent = `${ordinal(myIdx + 1)}/${racers.length}`;
-
-        const finishMeters = Math.round(saveData.finishKm * 1000);
-        if (finishMeters > 0) {
+        if (saveData.playMode === 'multiplayer') {
+          const racers = getAllRacersSummary();
+          const myIdx = racers.findIndex(r => r.isSelf);
+          elHudRank.textContent = `${ordinal(myIdx + 1)}/${racers.length}`;
+          const finishMeters = Math.round(saveData.finishKm * 1000);
           let dotsHtml = '';
           racers.forEach(r => {
             const pct = Math.max(0, Math.min(100, (r.dist / finishMeters) * 100));
-            const size = r.isSelf ? 'w-3.5 h-3.5 z-10 ring-2 ring-white' : 'w-2.5 h-2.5 opacity-85';
+            const size = r.isSelf ? 'w-3.5 h-3.5 z-10 ring-2 ring-white' : 'w-2.5 h-2.5 opacity-90';
             dotsHtml += `<div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full ${size}" style="left:${pct}%;background:${r.color};"></div>`;
           });
           elProgressTrack.innerHTML = dotsHtml;
@@ -1889,14 +1715,14 @@
         syncPedalClasses();
         sound.updateEngine(0, false, false);
 
+        const isMP = saveData.playMode === 'multiplayer';
         const racers = getAllRacersSummary();
         const myRank = racers.findIndex(r => r.isSelf) + 1;
 
-        if (isVictory) {
+        if (isVictory && isMP) {
           sound.playFinish();
-          const podiumBonus = myRank === 1 ? 400 : myRank === 2 ? 250 : myRank === 3 ? 150 : 75;
-          saveData.coins += podiumBonus;
-          runCoins += podiumBonus;
+          const podiumBonus = myRank === 1 ? 400 : myRank === 2 ? 250 : 150;
+          saveData.coins += podiumBonus; runCoins += podiumBonus;
           elGoBadge.textContent = `${ordinal(myRank)} Place Finish! (+$${podiumBonus})`;
           elGoBadge.className = 'inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 mb-1.5';
           elGoTitle.textContent = myRank === 1 ? 'Victory! 🏁' : 'Race Finished! 🏁';
@@ -1904,7 +1730,7 @@
           sound.playCrash();
           elGoBadge.textContent = car.deathReason || 'Run Ended';
           elGoBadge.className = 'inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/30 mb-1.5';
-          elGoTitle.textContent = 'Run Complete';
+          elGoTitle.textContent = isMP ? 'Race Ended' : 'Solo Run Complete';
         }
 
         if (runDistance > (saveData.bestByBiome[saveData.selectedBiome] || 0)) {
@@ -1914,44 +1740,47 @@
         updateHud();
 
         elGoDist.textContent = String(runDistance);
-        elGoTime.textContent = formatTime(car.finishTime || raceElapsed);
         elGoCoins.textContent = String(runCoins);
         elGoFlips.textContent = String(runFlips);
 
-        // Render leaderboard
-        elGoLeaderboard.innerHTML = racers.map((r, i) => `
-          <div class="flex items-center justify-between px-2.5 py-1.5 rounded-xl ${r.isSelf ? 'bg-emerald-500/20 border border-emerald-400/40' : 'bg-slate-800/70'}">
-            <div class="flex items-center gap-2">
-              <span class="w-5 text-center font-black ${i === 0 ? 'text-amber-300' : 'text-slate-400'}">${ordinal(i + 1)}</span>
-              <span class="w-2.5 h-2.5 rounded-full" style="background:${r.color}"></span>
-              <span class="font-extrabold text-white">${r.name}</span>
-              <span class="text-[10px] text-slate-400 hidden sm:inline">(${r.vehicle})</span>
+        if (isMP) {
+          elGoSecondLabel.textContent = 'Time';
+          elGoSecondVal.textContent = formatTime(car.finishTime || raceElapsed);
+          elGoLeaderboardWrap.classList.remove('hidden');
+          elGoLeaderboard.innerHTML = racers.map((r, i) => `
+            <div class="flex items-center justify-between px-2.5 py-1.5 rounded-xl ${r.isSelf ? 'bg-emerald-500/20 border border-emerald-400/40' : 'bg-slate-800/70'}">
+              <div class="flex items-center gap-2">
+                <span class="w-5 text-center font-black ${i === 0 ? 'text-amber-300' : 'text-slate-400'}">${ordinal(i + 1)}</span>
+                <span class="w-2.5 h-2.5 rounded-full" style="background:${r.color}"></span>
+                <span class="font-extrabold text-white">${r.name}</span>
+                <span class="text-[10px] text-slate-400 hidden sm:inline">(${r.vehicle})</span>
+              </div>
+              <div class="font-mono font-bold ${r.finished ? 'text-emerald-300' : 'text-slate-300'}">
+                ${r.finished ? formatTime(r.finishTime) + ' 🏁' : r.dist + 'm'}
+              </div>
             </div>
-            <div class="font-mono font-bold ${r.finished ? 'text-emerald-300' : 'text-slate-300'}">
-              ${r.finished ? formatTime(r.finishTime) + ' 🏁' : r.dist + 'm'}
-            </div>
-          </div>
-        `).join('');
+          `).join('');
+        } else {
+          elGoSecondLabel.textContent = 'Best Record';
+          elGoSecondVal.innerHTML = `<span id="go-best">${saveData.bestByBiome[saveData.selectedBiome] || 0}</span>m`;
+          elGoLeaderboardWrap.classList.add('hidden');
+        }
 
         overlayGameOver.classList.remove('hidden');
       }
 
       function checkPickups() {
-        const cx = car.x;
-        const cy = car.y;
+        const cx = car.x; const cy = car.y;
         for (const p of terrain.pickups) {
           if (p.collected || Math.abs(p.x - cx) > 95) continue;
           if (Math.hypot(p.x - cx, p.y - cy) < p.radius + 42) {
             p.collected = true;
             if (p.type === 'fuel') {
-              car.fuel = 100;
-              sound.playFuel();
+              car.fuel = 100; sound.playFuel();
               addFloatText(p.x, p.y - 16, 'FUEL FULL!', '#4ade80');
               for (let k = 0; k < 10; k++) emitParticle(p.x, p.y, (Math.random() - 0.5) * 140, -60 - Math.random() * 90, '#ef4444', 4);
             } else {
-              saveData.coins += p.value;
-              runCoins += p.value;
-              sound.playCoin();
+              saveData.coins += p.value; runCoins += p.value; sound.playCoin();
               addFloatText(p.x, p.y - 14, `+$${p.value}`, '#fde047');
               for (let k = 0; k < 6; k++) emitParticle(p.x, p.y, (Math.random() - 0.5) * 110, -40 - Math.random() * 80, '#fbbf24', 3);
             }
@@ -1960,27 +1789,18 @@
       }
 
       function update(dt, nowMs) {
-        if (gameState !== 'playing') {
-          sound.updateEngine(0, false, false);
-          return;
-        }
+        if (gameState !== 'playing') { sound.updateEngine(0, false, false); return; }
 
         raceElapsed += dt;
         const biome = BIOMES[saveData.selectedBiome];
+        const maxX = Math.max(car.x, carP2 ? carP2.x : car.x);
+        terrain.ensureGeneratedUpTo(maxX + width * 1.5);
 
-        // Ensure terrain is generated ahead of farthest racer
-        let maxRacerX = car.x;
-        if (carP2 && carP2.x > maxRacerX) maxRacerX = carP2.x;
-        for (const b of bots) if (b.x > maxRacerX) maxRacerX = b.x;
-        terrain.ensureGeneratedUpTo(maxRacerX + width * 1.5);
-
-        // 120Hz fixed-substep physics (4 substeps per frame)
         const substeps = 4;
         const subDt = dt / substeps;
         for (let s = 0; s < substeps; s++) {
           car.step(subDt, inputP1, terrain, biome, emitParticle, (label, bonus, isFlip) => {
-            saveData.coins += bonus;
-            runCoins += bonus;
+            saveData.coins += bonus; runCoins += bonus;
             if (isFlip) runFlips++;
             sound.playStunt();
             addFloatText(car.x, car.y - 68, label, '#38bdf8');
@@ -1988,33 +1808,21 @@
           if (carP2 && !carP2.dead) {
             carP2.step(subDt, inputP2, terrain, biome, emitParticle, null);
           }
-          for (const b of bots) {
-            const bi = b.computeBotInput(terrain);
-            b.step(subDt, bi, terrain, biome, emitParticle, null);
-          }
         }
 
         checkPickups();
 
-        // Check finish line crossings (no car-to-car collision!)
+        // Finish line only exists in Multiplayer Mode
         if (terrain.finishX > 0) {
           if (!car.finished && car.x >= terrain.finishX) {
-            car.finished = true;
-            car.finishTime = raceElapsed;
+            car.finished = true; car.finishTime = raceElapsed;
             runDistance = terrain.finishMeters;
             broadcastLocalState(nowMs);
             triggerGameOver(true);
             return;
           }
           if (carP2 && !carP2.finished && carP2.x >= terrain.finishX) {
-            carP2.finished = true;
-            carP2.finishTime = raceElapsed;
-          }
-          for (const b of bots) {
-            if (!b.finished && b.x >= terrain.finishX) {
-              b.finished = true;
-              b.finishTime = raceElapsed;
-            }
+            carP2.finished = true; carP2.finishTime = raceElapsed;
           }
         }
 
@@ -2037,12 +1845,10 @@
           if (p.life <= 0) particles.splice(i, 1);
         }
         for (let i = floatTexts.length - 1; i >= 0; i--) {
-          const f = floatTexts[i];
-          f.y -= 38 * dt; f.life -= dt;
+          const f = floatTexts[i]; f.y -= 38 * dt; f.life -= dt;
           if (f.life <= 0) floatTexts.splice(i, 1);
         }
 
-        // Smooth camera follow
         const lookAhead = Math.max(-40, Math.min(200, car.vx * 0.28));
         camera.x += (car.x + width * 0.16 + lookAhead - camera.x) * Math.min(1, dt * 6.5);
         camera.y += (car.y - height * 0.04 - camera.y) * Math.min(1, dt * 4.5);
@@ -2058,7 +1864,7 @@
       }
 
       // ============================================================
-      // 7. CANVAS RENDERING (MULTI-VEHICLE + GHOST RACERS + FINISH ARCH)
+      // 7. CANVAS RENDERING
       // ============================================================
       function drawBackground(biome) {
         const skyGrad = ctx.createLinearGradient(0, 0, 0, height);
@@ -2072,23 +1878,18 @@
           ctx.fillStyle = '#ffffff';
           for (const st of stars) {
             ctx.globalAlpha = st.a;
-            ctx.beginPath();
-            ctx.arc(st.x * width, st.y * height, st.r, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.beginPath(); ctx.arc(st.x * width, st.y * height, st.r, 0, Math.PI * 2); ctx.fill();
           }
           ctx.globalAlpha = 1;
         }
 
-        const sunX = width * 0.78;
-        const sunY = height * 0.2;
+        const sunX = width * 0.78; const sunY = height * 0.2;
         const sunGlow = ctx.createRadialGradient(sunX, sunY, 10, sunX, sunY, 88);
         sunGlow.addColorStop(0, biome.sunColor);
         sunGlow.addColorStop(0.35, biome.sunColor + '88');
         sunGlow.addColorStop(1, 'rgba(255,255,255,0)');
         ctx.fillStyle = sunGlow;
-        ctx.beginPath();
-        ctx.arc(sunX, sunY, 88, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(sunX, sunY, 88, 0, Math.PI * 2); ctx.fill();
 
         if (biome.cloudColor) {
           ctx.fillStyle = biome.cloudColor;
@@ -2102,56 +1903,41 @@
             ctx.fill();
           }
         }
-
         drawParallaxRidge(biome.farHill, 0.12, height * 0.68, 75, 0.0032);
         drawParallaxRidge(biome.midHill, 0.26, height * 0.78, 48, 0.0052);
       }
 
       function drawParallaxRidge(color, factor, baseY, amp, freq) {
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.moveTo(0, height);
+        ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0, height);
         const offset = camera.x * factor;
         for (let sx = 0; sx <= width + 32; sx += 28) {
           const wx = sx + offset;
-          const h = Math.sin(wx * freq) * amp + Math.sin(wx * freq * 2.1 + 1.4) * (amp * 0.42);
-          ctx.lineTo(sx, baseY + h);
+          ctx.lineTo(sx, baseY + Math.sin(wx * freq) * amp + Math.sin(wx * freq * 2.1 + 1.4) * (amp * 0.42));
         }
-        ctx.lineTo(width, height);
-        ctx.closePath();
-        ctx.fill();
+        ctx.lineTo(width, height); ctx.closePath(); ctx.fill();
       }
 
       function drawTerrain(biome) {
         const halfW = (width / 2) / camera.zoom + 140;
-        const leftX = camera.x - halfW;
-        const rightX = camera.x + halfW;
+        const leftX = camera.x - halfW; const rightX = camera.x + halfW;
         const bottomY = camera.y + (height / 2) / camera.zoom + 340;
 
         for (const prop of terrain.props) {
-          if (prop.x < leftX - 60 || prop.x > rightX + 60) continue;
-          drawProp(prop);
+          if (prop.x >= leftX - 60 && prop.x <= rightX + 60) drawProp(prop);
         }
 
-        // Dirt polygon
         ctx.beginPath();
         const startStep = Math.floor(leftX / terrain.step) * terrain.step;
         ctx.moveTo(startStep, bottomY);
-        for (let x = startStep; x <= rightX + terrain.step; x += terrain.step) {
-          ctx.lineTo(x, terrain.getHeight(x));
-        }
+        for (let x = startStep; x <= rightX + terrain.step; x += terrain.step) ctx.lineTo(x, terrain.getHeight(x));
         ctx.lineTo(rightX + terrain.step, bottomY);
         ctx.closePath();
 
         const dirtGrad = ctx.createLinearGradient(0, camera.y - 120, 0, bottomY);
-        dirtGrad.addColorStop(0, biome.dirtTop);
-        dirtGrad.addColorStop(1, biome.dirtBottom);
-        ctx.fillStyle = dirtGrad;
-        ctx.fill();
+        dirtGrad.addColorStop(0, biome.dirtTop); dirtGrad.addColorStop(1, biome.dirtBottom);
+        ctx.fillStyle = dirtGrad; ctx.fill();
 
-        // Strata line
-        ctx.strokeStyle = 'rgba(0,0,0,0.16)';
-        ctx.lineWidth = 6;
+        ctx.strokeStyle = 'rgba(0,0,0,0.16)'; ctx.lineWidth = 6;
         ctx.beginPath();
         for (let x = startStep; x <= rightX + terrain.step; x += terrain.step) {
           const y = terrain.getHeight(x) + 34;
@@ -2159,11 +1945,7 @@
         }
         ctx.stroke();
 
-        // Top crust
-        ctx.strokeStyle = biome.crustEdge;
-        ctx.lineWidth = 14;
-        ctx.lineJoin = 'round';
-        ctx.lineCap = 'round';
+        ctx.strokeStyle = biome.crustEdge; ctx.lineWidth = 14; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
         ctx.beginPath();
         for (let x = startStep; x <= rightX + terrain.step; x += terrain.step) {
           const y = terrain.getHeight(x) + 5;
@@ -2171,8 +1953,7 @@
         }
         ctx.stroke();
 
-        ctx.strokeStyle = biome.crustTop;
-        ctx.lineWidth = 8;
+        ctx.strokeStyle = biome.crustTop; ctx.lineWidth = 8;
         ctx.beginPath();
         for (let x = startStep; x <= rightX + terrain.step; x += terrain.step) {
           const y = terrain.getHeight(x) + 1;
@@ -2180,124 +1961,79 @@
         }
         ctx.stroke();
 
-        // Wooden plank highlight for Canyon Bridges
         if (terrain.biomeKey === 'canyon') {
-          ctx.strokeStyle = '#d97706';
-          ctx.lineWidth = 10;
-          ctx.setLineDash([12, 6]);
+          ctx.strokeStyle = '#d97706'; ctx.lineWidth = 10; ctx.setLineDash([12, 6]);
           ctx.beginPath();
           let inBridge = false;
           for (let x = startStep; x <= rightX + terrain.step; x += terrain.step) {
             if (terrain.isBridgeAt(x)) {
               const y = terrain.getHeight(x);
               if (!inBridge) { ctx.moveTo(x, y); inBridge = true; } else ctx.lineTo(x, y);
-            } else {
-              inBridge = false;
-            }
+            } else inBridge = false;
           }
-          ctx.stroke();
-          ctx.setLineDash([]);
+          ctx.stroke(); ctx.setLineDash([]);
         }
 
-        // Distance signs every 100m
         const firstSignM = Math.max(100, Math.floor((leftX - 120) / (100 * PX_PER_METER)) * 100);
         for (let m = firstSignM; ; m += 100) {
           const sx = 120 + m * PX_PER_METER;
           if (sx > rightX + 80) break;
-          if (sx < leftX - 80) continue;
-          if (terrain.finishX > 0 && Math.abs(sx - terrain.finishX) < 60) continue;
+          if (sx < leftX - 80 || (terrain.finishX > 0 && Math.abs(sx - terrain.finishX) < 60)) continue;
           const sy = terrain.getHeight(sx);
-          ctx.fillStyle = '#475569';
-          ctx.fillRect(sx - 2, sy - 42, 4, 42);
-          ctx.fillStyle = '#f8fafc';
-          ctx.strokeStyle = '#0f172a';
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.roundRect(sx - 26, sy - 60, 52, 22, 5);
-          ctx.fill();
-          ctx.stroke();
-          ctx.fillStyle = '#0f172a';
-          ctx.font = 'bold 11px Inter, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
+          ctx.fillStyle = '#475569'; ctx.fillRect(sx - 2, sy - 42, 4, 42);
+          ctx.fillStyle = '#f8fafc'; ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.roundRect(sx - 26, sy - 60, 52, 22, 5); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = '#0f172a'; ctx.font = 'bold 11px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
           ctx.fillText(m >= 1000 && m % 1000 === 0 ? `${m / 1000}km` : `${m}m`, sx, sy - 49);
         }
 
-        // Checkered Finish Line Arch!
+        // Checkered Finish Line Arch (Multiplayer only!)
         if (terrain.finishX > 0 && terrain.finishX > leftX - 120 && terrain.finishX < rightX + 120) {
-          const fx = terrain.finishX;
-          const fy = terrain.getHeight(fx);
-          // Arch pillars
+          const fx = terrain.finishX; const fy = terrain.getHeight(fx);
           ctx.fillStyle = '#e2e8f0';
-          ctx.fillRect(fx - 10, fy - 155, 10, 155);
-          ctx.fillRect(fx + 28, fy - 155, 10, 155);
-          // Checkered banner
-          const bw = 64;
-          const bh = 28;
-          const bx = fx - 18;
-          const by = fy - 158;
+          ctx.fillRect(fx - 10, fy - 155, 10, 155); ctx.fillRect(fx + 28, fy - 155, 10, 155);
+          const bw = 64; const bh = 28; const bx = fx - 18; const by = fy - 158;
           for (let r = 0; r < 2; r++) {
             for (let c = 0; c < 6; c++) {
               ctx.fillStyle = (r + c) % 2 === 0 ? '#0f172a' : '#ffffff';
               ctx.fillRect(bx + c * (bw / 6), by + r * (bh / 2), bw / 6 + 0.5, bh / 2 + 0.5);
             }
           }
-          ctx.strokeStyle = '#facc15';
-          ctx.lineWidth = 3;
-          ctx.strokeRect(bx, by, bw, bh);
-          ctx.fillStyle = '#facc15';
-          ctx.font = '900 12px Inter, sans-serif';
-          ctx.textAlign = 'center';
+          ctx.strokeStyle = '#facc15'; ctx.lineWidth = 3; ctx.strokeRect(bx, by, bw, bh);
+          ctx.fillStyle = '#facc15'; ctx.font = '900 12px Inter, sans-serif'; ctx.textAlign = 'center';
           ctx.fillText(`FINISH ${saveData.finishKm}KM`, fx + 14, by - 10);
         }
       }
 
       function drawProp(prop) {
-        ctx.save();
-        ctx.translate(prop.x, prop.y);
-        ctx.scale(prop.scale, prop.scale);
+        ctx.save(); ctx.translate(prop.x, prop.y); ctx.scale(prop.scale, prop.scale);
         const bk = saveData.selectedBiome;
         if (prop.kind === 'rock' || bk === 'moon' || bk === 'canyon') {
           ctx.fillStyle = bk === 'canyon' ? '#9a3412' : '#64748b';
-          ctx.beginPath();
-          ctx.moveTo(-16, 4); ctx.lineTo(-10, -14); ctx.lineTo(4, -18); ctx.lineTo(18, -6); ctx.lineTo(16, 4);
-          ctx.closePath(); ctx.fill();
+          ctx.beginPath(); ctx.moveTo(-16, 4); ctx.lineTo(-10, -14); ctx.lineTo(4, -18); ctx.lineTo(18, -6); ctx.lineTo(16, 4); ctx.closePath(); ctx.fill();
         } else if (bk === 'desert') {
           ctx.fillStyle = '#15803d';
-          ctx.beginPath();
-          ctx.roundRect(-5, -42, 10, 44, 5);
-          ctx.roundRect(-16, -30, 12, 7, 3);
-          ctx.roundRect(-16, -38, 7, 14, 3);
-          ctx.roundRect(5, -24, 12, 7, 3);
-          ctx.roundRect(10, -34, 7, 16, 3);
-          ctx.fill();
+          ctx.beginPath(); ctx.roundRect(-5, -42, 10, 44, 5); ctx.roundRect(-16, -30, 12, 7, 3); ctx.roundRect(-16, -38, 7, 14, 3); ctx.roundRect(5, -24, 12, 7, 3); ctx.roundRect(10, -34, 7, 16, 3); ctx.fill();
         } else if (bk === 'arctic' || bk === 'alpine') {
           ctx.fillStyle = '#78350f'; ctx.fillRect(-4, -14, 8, 16);
-          ctx.fillStyle = '#0f766e';
-          ctx.beginPath(); ctx.moveTo(0, -56); ctx.lineTo(-20, -14); ctx.lineTo(20, -14); ctx.closePath(); ctx.fill();
-          ctx.fillStyle = '#f8fafc';
-          ctx.beginPath(); ctx.moveTo(0, -56); ctx.lineTo(-10, -35); ctx.lineTo(10, -35); ctx.closePath(); ctx.fill();
+          ctx.fillStyle = '#0f766e'; ctx.beginPath(); ctx.moveTo(0, -56); ctx.lineTo(-20, -14); ctx.lineTo(20, -14); ctx.closePath(); ctx.fill();
+          ctx.fillStyle = '#f8fafc'; ctx.beginPath(); ctx.moveTo(0, -56); ctx.lineTo(-10, -35); ctx.lineTo(10, -35); ctx.closePath(); ctx.fill();
         } else if (bk === 'highway') {
-          // Lamp post
           ctx.fillStyle = '#64748b'; ctx.fillRect(-2, -62, 4, 62); ctx.fillRect(-2, -62, 16, 3);
           ctx.fillStyle = '#fef08a'; ctx.beginPath(); ctx.arc(13, -58, 4, 0, Math.PI * 2); ctx.fill();
         } else {
           ctx.fillStyle = '#78350f'; ctx.fillRect(-5, -22, 10, 24);
-          ctx.fillStyle = '#16a34a';
-          ctx.beginPath(); ctx.arc(0, -34, 19, 0, Math.PI * 2); ctx.arc(-12, -26, 13, 0, Math.PI * 2); ctx.arc(12, -26, 13, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#16a34a'; ctx.beginPath(); ctx.arc(0, -34, 19, 0, Math.PI * 2); ctx.arc(-12, -26, 13, 0, Math.PI * 2); ctx.arc(12, -26, 13, 0, Math.PI * 2); ctx.fill();
         }
         ctx.restore();
       }
 
       function drawPickups(timeSec) {
         const halfW = (width / 2) / camera.zoom + 100;
-        const leftX = camera.x - halfW;
-        const rightX = camera.x + halfW;
+        const leftX = camera.x - halfW; const rightX = camera.x + halfW;
         for (const p of terrain.pickups) {
           if (p.collected || p.x < leftX || p.x > rightX) continue;
-          const bob = Math.sin(timeSec * 4 + p.x * 0.02) * 3.5;
-          ctx.save();
-          ctx.translate(p.x, p.y + bob);
+          ctx.save(); ctx.translate(p.x, p.y + Math.sin(timeSec * 4 + p.x * 0.02) * 3.5);
           if (p.type === 'fuel') {
             ctx.fillStyle = '#dc2626'; ctx.strokeStyle = '#7f1d1d'; ctx.lineWidth = 2.5;
             ctx.beginPath(); ctx.roundRect(-13, -16, 26, 30, 5); ctx.fill(); ctx.stroke();
@@ -2306,12 +2042,10 @@
             ctx.fillStyle = '#ffffff'; ctx.font = '900 12px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText('F', 0, 2);
           } else {
-            const isGold = p.value >= 100;
-            const isSilver = p.value === 25;
+            const isGold = p.value >= 100; const isSilver = p.value === 25;
             ctx.fillStyle = isGold ? '#facc15' : isSilver ? '#fb923c' : '#fde047';
             ctx.strokeStyle = isGold ? '#a16207' : isSilver ? '#9a3412' : '#ca8a04';
-            ctx.lineWidth = 2.5;
-            ctx.beginPath(); ctx.arc(0, 0, 13, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(0, 0, 13, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
             ctx.fillStyle = '#713f12'; ctx.font = '900 10px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText(String(p.value), 0, 0.5);
           }
@@ -2321,13 +2055,10 @@
 
       function drawVehicleBody(vData, isGhost, label, badgeColor) {
         const spec = vData.spec;
-        const cos = Math.cos(vData.angle);
-        const sin = Math.sin(vData.angle);
-
+        const cos = Math.cos(vData.angle); const sin = Math.sin(vData.angle);
         ctx.save();
         if (isGhost) ctx.globalAlpha = 0.48;
 
-        // Suspension struts
         ctx.strokeStyle = isGhost ? (badgeColor || '#38bdf8') : '#cbd5e1';
         ctx.lineWidth = 4;
         for (const w of vData.wheels) {
@@ -2336,137 +2067,73 @@
           ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(w.wx, w.wy); ctx.stroke();
         }
 
-        // Chassis + Driver
-        ctx.save();
-        ctx.translate(vData.x, vData.y);
-        ctx.rotate(vData.angle);
-
-        // Driver
-        ctx.fillStyle = '#1e293b';
-        ctx.beginPath(); ctx.roundRect(-14, -24, 15, 18, 5); ctx.fill();
-        ctx.fillStyle = '#fde68a';
-        ctx.beginPath(); ctx.arc(-6, -34, 10.5, 0, Math.PI * 2); ctx.fill();
+        ctx.save(); ctx.translate(vData.x, vData.y); ctx.rotate(vData.angle);
+        ctx.fillStyle = '#1e293b'; ctx.beginPath(); ctx.roundRect(-14, -24, 15, 18, 5); ctx.fill();
+        ctx.fillStyle = '#fde68a'; ctx.beginPath(); ctx.arc(-6, -34, 10.5, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = isGhost ? (badgeColor || '#38bdf8') : '#f8fafc';
         ctx.beginPath(); ctx.arc(-6, -35, 11, Math.PI * 0.85, Math.PI * 2.1); ctx.fill();
-        ctx.fillStyle = '#0ea5e9';
-        ctx.beginPath(); ctx.roundRect(-3, -38, 8.5, 5.5, 2); ctx.fill();
+        ctx.fillStyle = '#0ea5e9'; ctx.beginPath(); ctx.roundRect(-3, -38, 8.5, 5.5, 2); ctx.fill();
 
         const bodyCol = isGhost && badgeColor ? badgeColor : spec.bodyColor;
-        ctx.fillStyle = bodyCol;
-        ctx.strokeStyle = spec.accentColor;
-        ctx.lineWidth = 2.5;
+        ctx.fillStyle = bodyCol; ctx.strokeStyle = spec.accentColor; ctx.lineWidth = 2.5;
 
         if (spec.id === 'moto') {
-          // Motocross frame
-          ctx.beginPath();
-          ctx.moveTo(-36, 4); ctx.lineTo(-14, -12); ctx.lineTo(14, -10); ctx.lineTo(36, -16);
-          ctx.lineTo(38, -6); ctx.lineTo(14, 8); ctx.lineTo(-34, 10);
-          ctx.closePath(); ctx.fill(); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(-36, 4); ctx.lineTo(-14, -12); ctx.lineTo(14, -10); ctx.lineTo(36, -16); ctx.lineTo(38, -6); ctx.lineTo(14, 8); ctx.lineTo(-34, 10); ctx.closePath(); ctx.fill(); ctx.stroke();
         } else if (spec.id === 'tractor') {
-          // Super Tractor silhouette with exhaust stack
           ctx.fillStyle = '#475569'; ctx.fillRect(28, -32, 6, 22);
-          ctx.fillStyle = bodyCol;
-          ctx.beginPath();
-          ctx.moveTo(-46, 10); ctx.lineTo(-46, -18); ctx.lineTo(-8, -18); ctx.lineTo(-4, -8);
-          ctx.lineTo(44, -8); ctx.lineTo(44, 10);
-          ctx.closePath(); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = bodyCol; ctx.beginPath(); ctx.moveTo(-46, 10); ctx.lineTo(-46, -18); ctx.lineTo(-8, -18); ctx.lineTo(-4, -8); ctx.lineTo(44, -8); ctx.lineTo(44, 10); ctx.closePath(); ctx.fill(); ctx.stroke();
         } else if (spec.id === 'rally') {
-          // Sleek Rally Car + rear wing
           ctx.fillStyle = '#0f172a'; ctx.fillRect(-52, -20, 12, 5); ctx.fillRect(-48, -16, 4, 8);
-          ctx.fillStyle = bodyCol;
-          ctx.beginPath();
-          ctx.moveTo(-48, 8); ctx.lineTo(-46, -8); ctx.lineTo(-20, -18); ctx.lineTo(18, -16);
-          ctx.lineTo(50, -4); ctx.lineTo(50, 10);
-          ctx.closePath(); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = bodyCol; ctx.beginPath(); ctx.moveTo(-48, 8); ctx.lineTo(-46, -8); ctx.lineTo(-20, -18); ctx.lineTo(18, -16); ctx.lineTo(50, -4); ctx.lineTo(50, 10); ctx.closePath(); ctx.fill(); ctx.stroke();
         } else if (spec.id === 'monster') {
-          // Lifted Monster Truck
-          ctx.strokeStyle = '#334155'; ctx.lineWidth = 3.5;
-          ctx.beginPath(); ctx.moveTo(-38, -8); ctx.lineTo(-28, -34); ctx.lineTo(12, -34); ctx.lineTo(24, -10); ctx.stroke();
+          ctx.strokeStyle = '#334155'; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.moveTo(-38, -8); ctx.lineTo(-28, -34); ctx.lineTo(12, -34); ctx.lineTo(24, -10); ctx.stroke();
           ctx.fillStyle = bodyCol; ctx.strokeStyle = spec.accentColor; ctx.lineWidth = 2.5;
-          ctx.beginPath();
-          ctx.moveTo(-54, 6); ctx.lineTo(-54, -14); ctx.lineTo(-22, -18); ctx.lineTo(20, -18);
-          ctx.lineTo(54, -8); ctx.lineTo(54, 8);
-          ctx.closePath(); ctx.fill(); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(-54, 6); ctx.lineTo(-54, -14); ctx.lineTo(-22, -18); ctx.lineTo(20, -18); ctx.lineTo(54, -8); ctx.lineTo(54, 8); ctx.closePath(); ctx.fill(); ctx.stroke();
         } else {
-          // Jeep / Buggy rollcage & chassis
-          ctx.strokeStyle = '#334155'; ctx.lineWidth = 3.5;
-          ctx.beginPath(); ctx.moveTo(-36, -6); ctx.lineTo(-28, -32); ctx.lineTo(10, -32); ctx.lineTo(22, -8); ctx.stroke();
+          ctx.strokeStyle = '#334155'; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.moveTo(-36, -6); ctx.lineTo(-28, -32); ctx.lineTo(10, -32); ctx.lineTo(22, -8); ctx.stroke();
           ctx.fillStyle = bodyCol; ctx.strokeStyle = spec.accentColor; ctx.lineWidth = 2.5;
-          ctx.beginPath();
-          ctx.moveTo(-48, 8); ctx.lineTo(-48, -10); ctx.lineTo(-22, -14); ctx.lineTo(18, -14);
-          ctx.lineTo(48, -4); ctx.lineTo(48, 10);
-          ctx.closePath(); ctx.fill(); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(-48, 8); ctx.lineTo(-48, -10); ctx.lineTo(-22, -14); ctx.lineTo(18, -14); ctx.lineTo(48, -4); ctx.lineTo(48, 10); ctx.closePath(); ctx.fill(); ctx.stroke();
         }
 
-        // Stripe & headlight
-        ctx.fillStyle = 'rgba(255,255,255,0.8)';
-        ctx.fillRect(-40, -2, 80, 3.5);
-        ctx.fillStyle = '#fef08a';
-        ctx.beginPath(); ctx.roundRect(41, -4, 6, 6, 2); ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.fillRect(-40, -2, 80, 3.5);
+        ctx.fillStyle = '#fef08a'; ctx.beginPath(); ctx.roundRect(41, -4, 6, 6, 2); ctx.fill();
         ctx.restore();
 
-        // Wheels
         for (const w of vData.wheels) {
-          ctx.save();
-          ctx.translate(w.wx, w.wy);
-          ctx.rotate(w.spin || 0);
+          ctx.save(); ctx.translate(w.wx, w.wy); ctx.rotate(w.spin || 0);
           const r = w.radius || 21;
-          ctx.fillStyle = '#1e293b';
-          ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#1e293b'; ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
           ctx.fillStyle = '#0f172a';
-          for (let t = 0; t < 8; t++) {
-            ctx.save(); ctx.rotate((t / 8) * Math.PI * 2);
-            ctx.fillRect(r - 3, -3, 4, 6); ctx.restore();
-          }
-          ctx.fillStyle = '#cbd5e1';
-          ctx.beginPath(); ctx.arc(0, 0, r * 0.55, 0, Math.PI * 2); ctx.fill();
+          for (let t = 0; t < 8; t++) { ctx.save(); ctx.rotate((t / 8) * Math.PI * 2); ctx.fillRect(r - 3, -3, 4, 6); ctx.restore(); }
+          ctx.fillStyle = '#cbd5e1'; ctx.beginPath(); ctx.arc(0, 0, r * 0.55, 0, Math.PI * 2); ctx.fill();
           ctx.strokeStyle = '#475569'; ctx.lineWidth = 2.5;
-          for (let s = 0; s < 4; s++) {
-            const a = (s / 4) * Math.PI * 2;
-            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(a) * r * 0.52, Math.sin(a) * r * 0.52); ctx.stroke();
-          }
-          ctx.fillStyle = bodyCol;
-          ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI * 2); ctx.fill();
+          for (let s = 0; s < 4; s++) { const a = (s / 4) * Math.PI * 2; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(a) * r * 0.52, Math.sin(a) * r * 0.52); ctx.stroke(); }
+          ctx.fillStyle = bodyCol; ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI * 2); ctx.fill();
           ctx.restore();
         }
         ctx.restore();
 
-        // Floating Ghost Name Tag above other cars
         if (isGhost && label) {
           ctx.save();
-          ctx.font = 'bold 11px Inter, sans-serif';
-          ctx.textAlign = 'center';
+          ctx.font = 'bold 11px Inter, sans-serif'; ctx.textAlign = 'center';
           const tw = ctx.measureText(label).width + 14;
-          ctx.fillStyle = 'rgba(15, 23, 42, 0.78)';
-          ctx.strokeStyle = badgeColor || '#38bdf8';
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.roundRect(vData.x - tw / 2, vData.y - 68, tw, 20, 8);
-          ctx.fill(); ctx.stroke();
-          ctx.fillStyle = '#f8fafc';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(label, vData.x, vData.y - 58);
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.78)'; ctx.strokeStyle = badgeColor || '#38bdf8'; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.roundRect(vData.x - tw / 2, vData.y - 68, tw, 20, 8); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = '#f8fafc'; ctx.textBaseline = 'middle'; ctx.fillText(label, vData.x, vData.y - 58);
           ctx.restore();
         }
       }
 
       function drawParticlesAndTexts() {
         for (const p of particles) {
-          ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
-          ctx.fillStyle = p.color;
+          ctx.globalAlpha = Math.max(0, p.life / p.maxLife); ctx.fillStyle = p.color;
           ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
         }
-        ctx.globalAlpha = 1;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
+        ctx.globalAlpha = 1; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         for (const f of floatTexts) {
           ctx.globalAlpha = Math.max(0, Math.min(1, f.life / f.maxLife));
-          ctx.font = '900 18px Inter, sans-serif';
-          ctx.strokeStyle = 'rgba(15,23,42,0.85)';
-          ctx.lineWidth = 4;
-          ctx.strokeText(f.text, f.x, f.y);
-          ctx.fillStyle = f.color;
-          ctx.fillText(f.text, f.x, f.y);
+          ctx.font = '900 18px Inter, sans-serif'; ctx.strokeStyle = 'rgba(15,23,42,0.85)'; ctx.lineWidth = 4;
+          ctx.strokeText(f.text, f.x, f.y); ctx.fillStyle = f.color; ctx.fillText(f.text, f.x, f.y);
         }
         ctx.globalAlpha = 1;
       }
@@ -2474,36 +2141,28 @@
       function render(timeMs = 0) {
         const biome = BIOMES[saveData.selectedBiome];
         drawBackground(biome);
-
         ctx.save();
-        ctx.translate(width / 2, height / 2);
-        ctx.scale(camera.zoom, camera.zoom);
-        ctx.translate(-camera.x, -camera.y);
-
+        ctx.translate(width / 2, height / 2); ctx.scale(camera.zoom, camera.zoom); ctx.translate(-camera.x, -camera.y);
         drawTerrain(biome);
         drawPickups(timeMs * 0.001);
 
-        // Draw non-colliding Ghost Competitors FIRST (behind local player)
-        for (const b of bots) {
-          drawVehicleBody(b, true, b.name, b.ghostColor);
-        }
-        if (carP2) {
-          drawVehicleBody(carP2, true, 'P2', '#facc15');
-        }
-        const now = performance.now();
-        for (const [, rp] of remotePeers.entries()) {
-          if (now - rp.lastSeen > 8000) continue;
-          const rSpec = VEHICLES[rp.vehicleId] || VEHICLES.jeep;
-          const rWheels = rp.wheels.length === 2
-            ? [
-                { lx: -rSpec.wheelBase * 0.5, ly: 8, wx: rp.wheels[0].wx, wy: rp.wheels[0].wy, spin: rp.wheels[0].spin, radius: rSpec.rearRadius },
-                { lx: rSpec.wheelBase * 0.5, ly: 8, wx: rp.wheels[1].wx, wy: rp.wheels[1].wy, spin: rp.wheels[1].spin, radius: rSpec.frontRadius }
-              ]
-            : [];
-          drawVehicleBody({ spec: rSpec, x: rp.x, y: rp.y, angle: rp.angle, wheels: rWheels }, true, rp.name, '#38bdf8');
+        // Render other real players as non-colliding transparent ghosts (Multiplayer mode only!)
+        if (saveData.playMode === 'multiplayer') {
+          if (carP2) drawVehicleBody(carP2, true, 'P2', '#facc15');
+          const now = performance.now();
+          for (const [, rp] of remotePeers.entries()) {
+            if (now - rp.lastSeen > 8000) continue;
+            const rSpec = VEHICLES[rp.vehicleId] || VEHICLES.jeep;
+            const rWheels = rp.wheels.length === 2
+              ? [
+                  { lx: -rSpec.wheelBase * 0.5, ly: 8, wx: rp.wheels[0].wx, wy: rp.wheels[0].wy, spin: rp.wheels[0].spin, radius: rSpec.rearRadius },
+                  { lx: rSpec.wheelBase * 0.5, ly: 8, wx: rp.wheels[1].wx, wy: rp.wheels[1].wy, spin: rp.wheels[1].spin, radius: rSpec.frontRadius }
+                ]
+              : [];
+            drawVehicleBody({ spec: rSpec, x: rp.x, y: rp.y, angle: rp.angle, wheels: rWheels }, true, rp.name, '#38bdf8');
+          }
         }
 
-        // Draw Local Player Vehicle on top
         if (car) drawVehicleBody(car, false, null, null);
         drawParticlesAndTexts();
         ctx.restore();
@@ -2519,71 +2178,80 @@
       }
 
       // ============================================================
-      // 8. MENU, GARAGE & MULTIPLAYER UI RENDERERS
+      // 8. MENU, GARAGE & MODE UI
       // ============================================================
+      const tabSetup = document.getElementById('tab-setup');
+      const tabMulti = document.getElementById('tab-multi');
+      const panelSetup = document.getElementById('panel-setup');
+      const panelMulti = document.getElementById('panel-multi');
+
+      function showSubtab(which) {
+        if (which === 'multi' && saveData.playMode === 'multiplayer') {
+          panelMulti.classList.remove('hidden'); panelSetup.classList.add('hidden');
+          tabMulti.className = 'py-1.5 rounded-lg text-xs font-bold border transition cursor-pointer bg-sky-500/20 border-sky-400 text-sky-200';
+          tabSetup.className = 'py-1.5 rounded-lg text-xs font-bold border transition cursor-pointer bg-slate-800/70 border-white/10 text-slate-300 hover:text-white';
+        } else {
+          panelSetup.classList.remove('hidden'); panelMulti.classList.add('hidden');
+          tabSetup.className = 'py-1.5 rounded-lg text-xs font-bold border transition cursor-pointer bg-sky-500/20 border-sky-400 text-sky-200';
+          tabMulti.className = 'py-1.5 rounded-lg text-xs font-bold border transition cursor-pointer bg-slate-800/70 border-white/10 text-slate-300 hover:text-white';
+        }
+      }
+
       function renderStartMenus() {
-        // 8 Biome Buttons
+        const isMP = saveData.playMode === 'multiplayer';
+        btnModeSolo.className = `py-2 rounded-lg text-xs font-extrabold transition cursor-pointer ${!isMP ? 'bg-emerald-500 text-slate-950' : 'text-slate-300 hover:text-white'}`;
+        btnModeMp.className = `py-2 rounded-lg text-xs font-extrabold transition cursor-pointer ${isMP ? 'bg-sky-500 text-slate-950' : 'text-slate-300 hover:text-white'}`;
+        btnPlay.textContent = isMP ? 'START MULTIPLAYER RACE!' : 'DRIVE SOLO (ENDLESS)!';
+
+        if (isMP) {
+          elMpSubtabs.classList.remove('hidden');
+          elMpSubtabs.classList.add('grid');
+        } else {
+          elMpSubtabs.classList.add('hidden');
+          elMpSubtabs.classList.remove('grid');
+          showSubtab('setup');
+        }
+
         elBiomeButtons.innerHTML = '';
         Object.entries(BIOMES).forEach(([key, b]) => {
           const active = key === saveData.selectedBiome;
           const btn = document.createElement('button');
           btn.type = 'button';
-          btn.className = `px-2 py-2 rounded-xl text-xs font-bold border transition cursor-pointer ${
-            active ? 'bg-emerald-500/25 border-emerald-400 text-white' : 'bg-slate-800/75 border-white/10 text-slate-300 hover:bg-slate-700/80'
-          }`;
+          btn.className = `px-2 py-2 rounded-xl text-xs font-bold border transition cursor-pointer ${active ? 'bg-emerald-500/25 border-emerald-400 text-white' : 'bg-slate-800/75 border-white/10 text-slate-300 hover:bg-slate-700/80'}`;
           btn.textContent = b.name;
           btn.addEventListener('click', () => {
-            sound.unlock();
-            saveData.selectedBiome = key;
-            persistSave();
-            renderStartMenus();
-            setupWorld(currentSeed);
+            sound.unlock(); saveData.selectedBiome = key; persistSave();
+            renderStartMenus(); setupWorld(currentSeed);
           });
           elBiomeButtons.appendChild(btn);
         });
         elPathDesc.textContent = BIOMES[saveData.selectedBiome].desc;
 
-        // 6 Vehicle Quick Buttons
         elStartVehicleButtons.innerHTML = '';
         Object.values(VEHICLES).forEach(v => {
           const active = v.id === saveData.selectedVehicle;
           const btn = document.createElement('button');
           btn.type = 'button';
-          btn.className = `px-2.5 py-2 rounded-xl border text-left transition cursor-pointer flex items-center gap-2 ${
-            active ? 'bg-amber-400/20 border-amber-400 text-white' : 'bg-slate-800/75 border-white/10 text-slate-300 hover:bg-slate-700/80'
-          }`;
-          btn.innerHTML = `
-            <span class="w-3 h-3 rounded-full shrink-0 border border-white/30" style="background:${v.bodyColor}"></span>
-            <span class="text-xs font-extrabold truncate">${v.name}</span>
-          `;
+          btn.className = `px-2.5 py-2 rounded-xl border text-left transition cursor-pointer flex items-center gap-2 ${active ? 'bg-amber-400/20 border-amber-400 text-white' : 'bg-slate-800/75 border-white/10 text-slate-300 hover:bg-slate-700/80'}`;
+          btn.innerHTML = `<span class="w-3 h-3 rounded-full shrink-0 border border-white/30" style="background:${v.bodyColor}"></span><span class="text-xs font-extrabold truncate">${v.name}</span>`;
           btn.addEventListener('click', () => {
-            sound.unlock();
-            saveData.selectedVehicle = v.id;
-            persistSave();
-            renderStartMenus();
-            setupWorld(currentSeed);
+            sound.unlock(); saveData.selectedVehicle = v.id; persistSave();
+            renderStartMenus(); setupWorld(currentSeed);
           });
           elStartVehicleButtons.appendChild(btn);
         });
         elVehicleSpec.textContent = VEHICLES[saveData.selectedVehicle].tag;
 
-        // Finish Line Buttons
         document.querySelectorAll('.finish-btn').forEach(btn => {
           const km = parseFloat(btn.getAttribute('data-km'));
           const active = Math.abs(km - saveData.finishKm) < 0.01;
-          btn.className = `finish-btn py-1.5 rounded-xl text-xs font-bold border transition cursor-pointer ${
-            active ? 'bg-amber-400/25 border-amber-400 text-amber-200' : 'bg-slate-800/75 border-white/10 text-slate-300 hover:bg-slate-700'
-          }`;
+          btn.className = `finish-btn py-1.5 rounded-xl text-xs font-bold border transition cursor-pointer ${active ? 'bg-amber-400/25 border-amber-400 text-amber-200' : 'bg-slate-800/75 border-white/10 text-slate-300 hover:bg-slate-700'}`;
         });
-        elFinishSummary.textContent = saveData.finishKm > 0 ? `${saveData.finishKm} km Race` : 'Endless Mode';
-        if (saveData.finishKm > 0) inputCustomKm.value = String(saveData.finishKm);
-
+        elFinishSummary.textContent = `${saveData.finishKm} km Race`;
+        inputCustomKm.value = String(saveData.finishKm);
         inputPlayerName.value = saveData.playerName;
-        selectBotCount.value = String(saveData.botCount);
         btnToggle2P.textContent = saveData.twoPlayer ? 'ON (P1+P2)' : 'OFF';
-        btnToggle2P.className = `px-3 py-1 rounded-lg text-xs font-black border transition cursor-pointer ${
-          saveData.twoPlayer ? 'bg-emerald-500/25 border-emerald-400 text-emerald-300' : 'bg-slate-800 border-white/15 text-slate-300'
-        }`;
+        btnToggle2P.className = `px-3 py-1 rounded-lg text-xs font-black border transition cursor-pointer ${saveData.twoPlayer ? 'bg-emerald-500/25 border-emerald-400 text-emerald-300' : 'bg-slate-800 border-white/15 text-slate-300'}`;
       }
 
       function renderGarage() {
@@ -2593,23 +2261,11 @@
           const selected = saveData.selectedVehicle === v.id;
           const card = document.createElement('button');
           card.type = 'button';
-          card.className = `p-2.5 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between gap-1.5 ${
-            selected ? 'bg-emerald-500/20 border-emerald-400 text-white' : 'bg-slate-800/80 border-white/15 hover:bg-slate-700/80 text-slate-200'
-          }`;
-          card.innerHTML = `
-            <div class="flex items-center justify-between">
-              <span class="w-3.5 h-3.5 rounded-full inline-block border border-white/30" style="background:${v.bodyColor}"></span>
-              <span class="text-[10px] font-black uppercase ${selected ? 'text-emerald-300' : 'text-slate-400'}">${selected ? 'Active' : v.drive}</span>
-            </div>
-            <div class="text-xs font-extrabold leading-tight">${v.name}</div>
-          `;
+          card.className = `p-2.5 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between gap-1.5 ${selected ? 'bg-emerald-500/20 border-emerald-400 text-white' : 'bg-slate-800/80 border-white/15 hover:bg-slate-700/80 text-slate-200'}`;
+          card.innerHTML = `<div class="flex items-center justify-between"><span class="w-3.5 h-3.5 rounded-full inline-block border border-white/30" style="background:${v.bodyColor}"></span><span class="text-[10px] font-black uppercase ${selected ? 'text-emerald-300' : 'text-slate-400'}">${selected ? 'Active' : v.drive}</span></div><div class="text-xs font-extrabold leading-tight">${v.name}</div>`;
           card.addEventListener('click', () => {
-            sound.unlock();
-            saveData.selectedVehicle = v.id;
-            persistSave();
-            renderStartMenus();
-            setupWorld(currentSeed);
-            renderGarage();
+            sound.unlock(); saveData.selectedVehicle = v.id; persistSave();
+            renderStartMenus(); setupWorld(currentSeed); renderGarage();
           });
           elVehicleList.appendChild(card);
         });
@@ -2626,28 +2282,16 @@
           for (let i = 1; i <= def.max; i++) pipsHtml += `<span class="h-1.5 flex-1 rounded-full ${i <= lvl ? 'bg-emerald-400' : 'bg-slate-700'}"></span>`;
           row.innerHTML = `
             <div class="flex-1 min-w-0">
-              <div class="flex items-center justify-between gap-2 mb-0.5">
-                <span class="text-xs font-extrabold text-white">${def.name}</span>
-                <span class="text-[10px] font-bold text-slate-400">Lv ${lvl}/${def.max}</span>
-              </div>
+              <div class="flex items-center justify-between gap-2 mb-0.5"><span class="text-xs font-extrabold text-white">${def.name}</span><span class="text-[10px] font-bold text-slate-400">Lv ${lvl}/${def.max}</span></div>
               <div class="text-[11px] text-slate-400 mb-1.5">${def.desc}</div>
               <div class="flex gap-1">${pipsHtml}</div>
             </div>
-            <button type="button" class="upg-buy px-3 py-2 rounded-xl text-xs font-black transition shrink-0 ${
-              isMax ? 'bg-slate-800 text-emerald-400 cursor-default'
-                : canAfford ? 'bg-amber-400 hover:bg-amber-300 text-slate-950 active:scale-95 cursor-pointer'
-                : 'bg-slate-800 text-slate-500 cursor-not-allowed'
-            }">${isMax ? 'MAX' : `$${cost}`}</button>
+            <button type="button" class="upg-buy px-3 py-2 rounded-xl text-xs font-black transition shrink-0 ${isMax ? 'bg-slate-800 text-emerald-400 cursor-default' : canAfford ? 'bg-amber-400 hover:bg-amber-300 text-slate-950 active:scale-95 cursor-pointer' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}">${isMax ? 'MAX' : `$${cost}`}</button>
           `;
           row.querySelector('.upg-buy').addEventListener('click', () => {
             if (isMax || saveData.coins < cost) return;
-            sound.unlock();
-            saveData.coins -= cost;
-            saveData.upgrades[def.key] = lvl + 1;
-            sound.playFuel();
-            persistSave();
-            setupWorld(currentSeed);
-            renderGarage();
+            sound.unlock(); saveData.coins -= cost; saveData.upgrades[def.key] = lvl + 1;
+            sound.playFuel(); persistSave(); setupWorld(currentSeed); renderGarage();
           });
           elUpgradeList.appendChild(row);
         });
@@ -2655,12 +2299,9 @@
 
       function openGarage(fromMenu) {
         returnToMenuFromGarage = fromMenu;
-        overlayStart.classList.add('hidden');
-        overlayGameOver.classList.add('hidden');
-        renderGarage();
-        overlayGarage.classList.remove('hidden');
+        overlayStart.classList.add('hidden'); overlayGameOver.classList.add('hidden');
+        renderGarage(); overlayGarage.classList.remove('hidden');
       }
-
       function closeGarage() {
         overlayGarage.classList.add('hidden');
         if (returnToMenuFromGarage) overlayStart.classList.remove('hidden');
@@ -2676,83 +2317,52 @@
       }
 
       function bindPedal(el, key) {
-        const down = (e) => {
-          e.preventDefault();
-          sound.unlock();
-          if (gameState !== 'playing') return;
-          inputP1[key] = true;
-          syncPedalClasses();
-        };
-        const up = (e) => {
-          e.preventDefault();
-          inputP1[key] = false;
-          syncPedalClasses();
-        };
-        el.addEventListener('pointerdown', down);
-        el.addEventListener('pointerup', up);
-        el.addEventListener('pointerleave', up);
-        el.addEventListener('pointercancel', up);
+        const down = (e) => { e.preventDefault(); sound.unlock(); if (gameState !== 'playing') return; inputP1[key] = true; syncPedalClasses(); };
+        const up = (e) => { e.preventDefault(); inputP1[key] = false; syncPedalClasses(); };
+        el.addEventListener('pointerdown', down); el.addEventListener('pointerup', up);
+        el.addEventListener('pointerleave', up); el.addEventListener('pointercancel', up);
       }
-      bindPedal(btnGas, 'gas');
-      bindPedal(btnBrake, 'brake');
+      bindPedal(btnGas, 'gas'); bindPedal(btnBrake, 'brake');
 
       window.addEventListener('keydown', (e) => {
-        if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'SELECT')) return;
+        if (document.activeElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+        const is2P = saveData.playMode === 'multiplayer' && saveData.twoPlayer;
         if (gameState === 'playing') {
-          if (e.code === 'KeyD' || (!saveData.twoPlayer && e.code === 'ArrowRight')) {
-            e.preventDefault(); sound.unlock(); inputP1.gas = true; syncPedalClasses();
-          } else if (e.code === 'KeyA' || (!saveData.twoPlayer && e.code === 'ArrowLeft')) {
-            e.preventDefault(); sound.unlock(); inputP1.brake = true; syncPedalClasses();
-          } else if (saveData.twoPlayer && e.code === 'ArrowRight') {
-            e.preventDefault(); inputP2.gas = true;
-          } else if (saveData.twoPlayer && e.code === 'ArrowLeft') {
-            e.preventDefault(); inputP2.brake = true;
-          }
+          if (e.code === 'KeyD' || (!is2P && e.code === 'ArrowRight')) { e.preventDefault(); sound.unlock(); inputP1.gas = true; syncPedalClasses(); }
+          else if (e.code === 'KeyA' || (!is2P && e.code === 'ArrowLeft')) { e.preventDefault(); sound.unlock(); inputP1.brake = true; syncPedalClasses(); }
+          else if (is2P && e.code === 'ArrowRight') { e.preventDefault(); inputP2.gas = true; }
+          else if (is2P && e.code === 'ArrowLeft') { e.preventDefault(); inputP2.brake = true; }
         }
         if (e.code === 'Escape' || e.code === 'KeyP') {
-          if (gameState === 'playing') {
-            gameState = 'paused'; inputP1.gas = false; inputP1.brake = false; syncPedalClasses();
-            overlayPause.classList.remove('hidden');
-          } else if (gameState === 'paused') {
-            gameState = 'playing'; overlayPause.classList.add('hidden');
-          }
-        } else if (e.code === 'KeyR' && (gameState === 'playing' || gameState === 'gameover')) {
-          startGame();
-        }
+          if (gameState === 'playing') { gameState = 'paused'; inputP1.gas = false; inputP1.brake = false; syncPedalClasses(); overlayPause.classList.remove('hidden'); }
+          else if (gameState === 'paused') { gameState = 'playing'; overlayPause.classList.add('hidden'); }
+        } else if (e.code === 'KeyR' && (gameState === 'playing' || gameState === 'gameover')) { startGame(); }
       });
 
       window.addEventListener('keyup', (e) => {
-        if (e.code === 'KeyD' || (!saveData.twoPlayer && e.code === 'ArrowRight')) { inputP1.gas = false; syncPedalClasses(); }
-        if (e.code === 'KeyA' || (!saveData.twoPlayer && e.code === 'ArrowLeft')) { inputP1.brake = false; syncPedalClasses(); }
-        if (saveData.twoPlayer && e.code === 'ArrowRight') inputP2.gas = false;
-        if (saveData.twoPlayer && e.code === 'ArrowLeft') inputP2.brake = false;
+        const is2P = saveData.playMode === 'multiplayer' && saveData.twoPlayer;
+        if (e.code === 'KeyD' || (!is2P && e.code === 'ArrowRight')) { inputP1.gas = false; syncPedalClasses(); }
+        if (e.code === 'KeyA' || (!is2P && e.code === 'ArrowLeft')) { inputP1.brake = false; syncPedalClasses(); }
+        if (is2P && e.code === 'ArrowRight') inputP2.gas = false;
+        if (is2P && e.code === 'ArrowLeft') inputP2.brake = false;
       });
 
-      // Tabs
-      const tabSetup = document.getElementById('tab-setup');
-      const tabMulti = document.getElementById('tab-multi');
-      const panelSetup = document.getElementById('panel-setup');
-      const panelMulti = document.getElementById('panel-multi');
-
-      tabSetup.addEventListener('click', () => {
-        panelSetup.classList.remove('hidden'); panelMulti.classList.add('hidden');
-        tabSetup.className = 'py-1.5 rounded-lg text-xs font-extrabold transition cursor-pointer bg-emerald-500 text-slate-950';
-        tabMulti.className = 'py-1.5 rounded-lg text-xs font-extrabold transition cursor-pointer text-slate-300 hover:text-white';
+      btnModeSolo.addEventListener('click', () => {
+        saveData.playMode = 'solo'; persistSave();
+        renderStartMenus(); setupWorld(currentSeed);
       });
-      tabMulti.addEventListener('click', () => {
-        panelMulti.classList.remove('hidden'); panelSetup.classList.add('hidden');
-        tabMulti.className = 'py-1.5 rounded-lg text-xs font-extrabold transition cursor-pointer bg-emerald-500 text-slate-950';
-        tabSetup.className = 'py-1.5 rounded-lg text-xs font-extrabold transition cursor-pointer text-slate-300 hover:text-white';
+      btnModeMp.addEventListener('click', () => {
+        saveData.playMode = 'multiplayer'; persistSave();
+        renderStartMenus(); showSubtab('multi'); setupWorld(currentSeed);
       });
 
-      // Finish line buttons & custom input
+      tabSetup.addEventListener('click', () => showSubtab('setup'));
+      tabMulti.addEventListener('click', () => showSubtab('multi'));
+
       document.querySelectorAll('.finish-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-          const km = parseFloat(btn.getAttribute('data-km'));
-          saveData.finishKm = km;
-          persistSave();
-          renderStartMenus();
-          setupWorld(currentSeed);
+          saveData.finishKm = parseFloat(btn.getAttribute('data-km'));
+          persistSave(); renderStartMenus(); setupWorld(currentSeed);
         });
       });
 
@@ -2760,9 +2370,7 @@
         const val = parseFloat(inputCustomKm.value);
         if (Number.isFinite(val) && val >= 0.5 && val <= 25) {
           saveData.finishKm = Math.round(val * 10) / 10;
-          persistSave();
-          renderStartMenus();
-          setupWorld(currentSeed);
+          persistSave(); renderStartMenus(); setupWorld(currentSeed);
           showToast(`Finish line set to ${saveData.finishKm} km`);
         }
       });
@@ -2772,36 +2380,28 @@
         persistSave();
       });
 
-      selectBotCount.addEventListener('change', () => {
-        saveData.botCount = Math.max(0, Math.min(5, parseInt(selectBotCount.value, 10) || 0));
-        persistSave();
-        setupWorld(currentSeed);
-      });
-
       btnToggle2P.addEventListener('click', () => {
-        saveData.twoPlayer = !saveData.twoPlayer;
-        persistSave();
-        renderStartMenus();
-        setupWorld(currentSeed);
+        saveData.twoPlayer = !saveData.twoPlayer; persistSave();
+        renderStartMenus(); setupWorld(currentSeed); updatePeerBadge();
       });
 
       document.getElementById('btn-join-room').addEventListener('click', () => {
         const parsed = decodeRoomCode(inputRoomCode.value);
-        if (!parsed) {
-          showToast('Invalid Room Code (e.g. CO-4821-2K)');
-          return;
-        }
-        saveData.selectedBiome = parsed.biomeKey;
-        saveData.finishKm = parsed.finishKm;
-        currentSeed = parsed.seed;
-        persistSave();
-        renderStartMenus();
-        setupWorld(currentSeed);
+        if (!parsed) { showToast('Invalid Room Code (e.g. CO-4821-2K)'); return; }
+        saveData.playMode = 'multiplayer';
+        saveData.selectedBiome = parsed.biomeKey; saveData.finishKm = parsed.finishKm;
+        currentSeed = parsed.seed; persistSave();
+        renderStartMenus(); setupWorld(currentSeed);
         showToast(`Joined Room ${currentRoomCode}!`);
       });
 
       document.getElementById('btn-copy-room').addEventListener('click', () => copyText(currentRoomCode));
-      document.getElementById('btn-copy-room-hud').addEventListener('click', () => copyText(currentRoomCode));
+      btnCopyRoomHud.addEventListener('click', () => copyText(currentRoomCode));
+
+      document.getElementById('btn-rtc-host').addEventListener('click', () => { createRtcHostInvite().catch(() => showToast('WebRTC invite failed')); });
+      document.getElementById('btn-rtc-join').addEventListener('click', prepareRtcGuestJoin);
+      document.getElementById('btn-rtc-copy').addEventListener('click', () => { if (elRtcCodeInput.value.trim()) copyText(elRtcCodeInput.value.trim()); });
+      document.getElementById('btn-rtc-confirm').addEventListener('click', confirmRtcExchange);
 
       function rollNewRandomSeed() {
         let next = Math.floor(1000 + Math.random() * 9000);
@@ -2809,59 +2409,43 @@
         return next;
       }
 
-      document.getElementById('btn-start-reroll').addEventListener('click', () => {
-        sound.unlock();
-        setupWorld(rollNewRandomSeed());
-      });
-
+      document.getElementById('btn-start-reroll').addEventListener('click', () => { sound.unlock(); setupWorld(rollNewRandomSeed()); });
       document.getElementById('btn-new-seed').addEventListener('click', () => {
-        sound.unlock();
-        currentSeed = rollNewRandomSeed();
+        sound.unlock(); currentSeed = rollNewRandomSeed();
         if (gameState === 'playing' || gameState === 'gameover' || gameState === 'paused') startGame();
         else setupWorld(currentSeed);
       });
 
-      document.getElementById('btn-play').addEventListener('click', startGame);
+      btnPlay.addEventListener('click', startGame);
       document.getElementById('btn-open-garage-start').addEventListener('click', () => openGarage(true));
       document.getElementById('btn-close-garage').addEventListener('click', closeGarage);
       document.getElementById('btn-garage-drive').addEventListener('click', startGame);
 
       document.getElementById('btn-pause').addEventListener('click', () => {
         sound.unlock();
-        if (gameState === 'playing') {
-          gameState = 'paused'; inputP1.gas = false; inputP1.brake = false; syncPedalClasses();
-          overlayPause.classList.remove('hidden');
-        } else if (gameState === 'paused') {
-          gameState = 'playing'; overlayPause.classList.add('hidden');
-        }
+        if (gameState === 'playing') { gameState = 'paused'; inputP1.gas = false; inputP1.brake = false; syncPedalClasses(); overlayPause.classList.remove('hidden'); }
+        else if (gameState === 'paused') { gameState = 'playing'; overlayPause.classList.add('hidden'); }
       });
-
-      document.getElementById('btn-resume').addEventListener('click', () => {
-        if (gameState === 'paused') { gameState = 'playing'; overlayPause.classList.add('hidden'); }
-      });
+      document.getElementById('btn-resume').addEventListener('click', () => { if (gameState === 'paused') { gameState = 'playing'; overlayPause.classList.add('hidden'); } });
       document.getElementById('btn-pause-retry').addEventListener('click', startGame);
       document.getElementById('btn-pause-new').addEventListener('click', () => { currentSeed = rollNewRandomSeed(); startGame(); });
-      document.getElementById('btn-pause-menu').addEventListener('click', () => {
-        gameState = 'menu'; overlayPause.classList.add('hidden'); overlayStart.classList.remove('hidden'); setupWorld(currentSeed);
-      });
+      document.getElementById('btn-pause-menu').addEventListener('click', () => { gameState = 'menu'; overlayPause.classList.add('hidden'); overlayStart.classList.remove('hidden'); setupWorld(currentSeed); });
 
       document.getElementById('btn-go-retry').addEventListener('click', startGame);
       document.getElementById('btn-go-new').addEventListener('click', () => { currentSeed = rollNewRandomSeed(); startGame(); });
       document.getElementById('btn-go-garage').addEventListener('click', () => openGarage(false));
-      document.getElementById('btn-go-menu').addEventListener('click', () => {
-        gameState = 'menu'; overlayGameOver.classList.add('hidden'); overlayStart.classList.remove('hidden'); setupWorld(currentSeed);
-      });
+      document.getElementById('btn-go-menu').addEventListener('click', () => { gameState = 'menu'; overlayGameOver.classList.add('hidden'); overlayStart.classList.remove('hidden'); setupWorld(currentSeed); });
 
       btnMute.addEventListener('click', () => {
-        sound.unlock();
-        sound.setMuted(!sound.muted);
+        sound.unlock(); sound.setMuted(!sound.muted);
         iconSoundOn.classList.toggle('hidden', sound.muted);
         iconSoundOff.classList.toggle('hidden', !sound.muted);
       });
 
       window.addEventListener('beforeunload', () => {
-        if (mpChannel) {
-          try { mpChannel.postMessage({ type: 'leave', peerId: localPeerId }); } catch (e) {}
+        if (mpChannel) { try { mpChannel.postMessage({ type: 'leave', peerId: localPeerId }); } catch (e) {} }
+        if (rtcDataChannel && rtcDataChannel.readyState === 'open') {
+          try { rtcDataChannel.send(JSON.stringify({ type: 'leave', peerId: localPeerId })); } catch (e) {}
         }
       });
 
